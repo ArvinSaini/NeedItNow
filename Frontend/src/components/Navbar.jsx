@@ -19,16 +19,15 @@ const Navbar = () => {
     { path: '/', label: 'Home' },
     { path: '/listings', label: 'Browse' },
     { path: '/requests', label: 'Requests' },
-    { path: '/aboutus', label: 'About Us' },
+    { path: '/aboutus', label: 'About Me' },
   ];
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? 'bg-linear-to-r from-[#D34E4E] to-[#F9E7B2] shadow-lg'
-          : 'bg-linear-to-r from-[#D34E4E] to-[#F9E7B2]'
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
+        ? 'bg-linear-to-r from-[#D34E4E] to-[#F9E7B2] shadow-lg'
+        : 'bg-linear-to-r from-[#D34E4E] to-[#F9E7B2]'
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
@@ -48,11 +47,10 @@ const Navbar = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`relative font-medium transition-colors ${
-                  location.pathname === link.path
-                    ? 'text-[#4338ca] font-bold'
-                    : 'text-[#4338ca]/80 hover:text-[#4338ca]'
-                }`}
+                className={`relative font-medium transition-colors ${location.pathname === link.path
+                  ? 'text-[#4338ca] font-bold'
+                  : 'text-[#4338ca]/80 hover:text-[#4338ca]'
+                  }`}
               >
                 {link.label}
                 {location.pathname === link.path && (
@@ -97,11 +95,10 @@ const Navbar = () => {
                 key={link.path}
                 to={link.path}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`block py-2 px-4 rounded-lg font-medium transition-colors ${
-                  location.pathname === link.path
-                    ? 'bg-[#D34E4E] text-white'
-                    : 'text-gray-700 hover:bg-[#F9E7B2]/30'
-                }`}
+                className={`block py-2 px-4 rounded-lg font-medium transition-colors ${location.pathname === link.path
+                  ? 'bg-[#D34E4E] text-white'
+                  : 'text-gray-700 hover:bg-[#F9E7B2]/30'
+                  }`}
               >
                 {link.label}
               </Link>
