@@ -28,7 +28,7 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('https://needitnow.onrender.com/user/signup', {
+      const response = await fetch('https://needitnow-ui-ux-project.onrender.com/user/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -23,7 +23,7 @@ const AllListings = () => {
 
   const fetchListings = useCallback(async () => {
     try {
-      const response = await fetch('https://needitnow.onrender.com/product');
+      const response = await fetch('https://needitnow-ui-ux-project.onrender.com/product');
       const data = await response.json();
 
       // Backend returns { count, listings } so we need to extract the listings array

@@ -28,7 +28,7 @@ const AddRequest = ({ onSuccess }) => {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch('https://needitnow.onrender.com/request', {
+      const response = await fetch('https://needitnow-ui-ux-project.onrender.com/request', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

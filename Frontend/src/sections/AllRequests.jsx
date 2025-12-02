@@ -23,7 +23,7 @@ const AllRequests = () => {
 
   const fetchRequests = useCallback(async () => {
     try {
-      const response = await fetch('https://needitnow.onrender.com/request');
+      const response = await fetch('https://needitnow-ui-ux-project.onrender.com/request');
       const data = await response.json();
 
       const requestsArray = data.requests || data || [];

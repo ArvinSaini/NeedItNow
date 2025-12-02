@@ -26,7 +26,7 @@ const ManageUsers = () => {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('https://needitnow.onrender.com/admin/users', {
+      const response = await fetch('https://needitnow-ui-ux-project.onrender.com/admin/users', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -50,7 +50,7 @@ const ManageUsers = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`https://needitnow.onrender.com/admin/users/${userId}/block`, {
+      const response = await fetch(`https://needitnow-ui-ux-project.onrender.com/admin/users/${userId}/block`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -68,7 +68,7 @@ const ManageUsers = () => {
   const handleUnblockUser = async (userId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`https://needitnow.onrender.com/admin/users/${userId}/unblock`, {
+      const response = await fetch(`https://needitnow-ui-ux-project.onrender.com/admin/users/${userId}/unblock`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -88,7 +88,7 @@ const ManageUsers = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`https://needitnow.onrender.com/admin/users/${userId}`, {
+      const response = await fetch(`https://needitnow-ui-ux-project.onrender.com/admin/users/${userId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

@@ -17,7 +17,7 @@ const MyListings = () => {
     console.log('Fetching listings for user:', userId);
 
     try {
-      const response = await fetch(`https://needitnow.onrender.com/product/owner/${userId}`);
+      const response = await fetch(`https://needitnow-ui-ux-project.onrender.com/product/owner/${userId}`);
       const data = await response.json();
       console.log('MyListings API response:', data);
 
@@ -42,7 +42,7 @@ const MyListings = () => {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch(`https://needitnow.onrender.com/product/${id}`, {
+      const response = await fetch(`https://needitnow-ui-ux-project.onrender.com/product/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -73,7 +73,7 @@ const MyListings = () => {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch(`https://needitnow.onrender.com/product/${id}`, {
+      const response = await fetch(`https://needitnow-ui-ux-project.onrender.com/product/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

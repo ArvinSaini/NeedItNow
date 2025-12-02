@@ -16,7 +16,7 @@ const MyRequests = () => {
     const userId = user.id || user._id; // Backend returns 'id', not '_id'
 
     try {
-      const response = await fetch(`https://needitnow.onrender.com/request/user/${userId}`);
+      const response = await fetch(`https://needitnow-ui-ux-project.onrender.com/request/user/${userId}`);
       const data = await response.json();
 
       if (response.ok) {
@@ -36,7 +36,7 @@ const MyRequests = () => {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch(`https://needitnow.onrender.com/request/${id}`, {
+      const response = await fetch(`https://needitnow-ui-ux-project.onrender.com/request/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -66,7 +66,7 @@ const MyRequests = () => {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch(`https://needitnow.onrender.com/request/${id}`, {
+      const response = await fetch(`https://needitnow-ui-ux-project.onrender.com/request/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -16,7 +16,7 @@ const ManageListings = () => {
   const fetchListings = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('https://needitnow.onrender.com/admin/listings', {
+      const response = await fetch('https://needitnow-ui-ux-project.onrender.com/admin/listings', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -40,7 +40,7 @@ const ManageListings = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`https://needitnow.onrender.com/admin/listings/${listingId}`, {
+      const response = await fetch(`https://needitnow-ui-ux-project.onrender.com/admin/listings/${listingId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
