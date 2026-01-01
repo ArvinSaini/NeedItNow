@@ -16,7 +16,7 @@ const ManageListings = () => {
   const fetchListings = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('https://needitnow-backend-ctbfahbeajfzbedw.eastasia-01.azurewebsites.net/listings', {
+      const response = await fetch('https://needitnow-backend-ctbfahbeajfzbedw.eastasia-01.azurewebsites.net/product', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -40,7 +40,7 @@ const ManageListings = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`https://needitnow-backend-ctbfahbeajfzbedw.eastasia-01.azurewebsites.net/admin/listings/${listingId}`, {
+      const response = await fetch(`https://needitnow-backend-ctbfahbeajfzbedw.eastasia-01.azurewebsites.net/admin/product/${listingId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
