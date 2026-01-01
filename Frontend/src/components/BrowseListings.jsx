@@ -22,7 +22,7 @@ const BrowseListings = () => {
 
   const fetchListings = useCallback(async () => {
     try {
-      const response = await fetch('https://needitnow-ui-ux-project.onrender.com/product');
+      const response = await fetch('https://needitnow-backend-ctbfahbeajfzbedw.eastasia-01.azurewebsites.net/product');
       const data = await response.json();
 
       const listingsArray = data.listings || data || [];

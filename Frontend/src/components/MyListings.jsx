@@ -73,7 +73,7 @@ const MyListings = () => {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch(`https://needitnow-ui-ux-project.onrender.com/product/${id}`, {
+      const response = await fetch(`https://needitnow-backend-ctbfahbeajfzbedw.eastasia-01.azurewebsites.net/product/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

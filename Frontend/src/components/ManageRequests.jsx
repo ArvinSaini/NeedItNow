@@ -15,7 +15,7 @@ const ManageRequests = () => {
   const fetchRequests = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('https://needitnow-ui-ux-project.onrender.com/admin/requests', {
+      const response = await fetch('https://needitnow-backend-ctbfahbeajfzbedw.eastasia-01.azurewebsites.net/admin/requests', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -39,7 +39,7 @@ const ManageRequests = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`https://needitnow-ui-ux-project.onrender.com/admin/requests/${requestId}`, {
+      const response = await fetch(`https://needitnow-backend-ctbfahbeajfzbedw.eastasia-01.azurewebsites.net/admin/requests/${requestId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

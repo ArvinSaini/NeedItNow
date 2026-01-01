@@ -35,7 +35,7 @@ const AddListing = ({ onSuccess }) => {
         delete submitData.price;
       }
 
-      const response = await fetch('https://needitnow-ui-ux-project.onrender.com/product', {
+      const response = await fetch('https://needitnow-backend-ctbfahbeajfzbedw.eastasia-01.azurewebsites.net/product', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
