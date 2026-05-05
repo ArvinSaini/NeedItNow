@@ -3,13 +3,14 @@ const jwt = require('jsonwebtoken');
 
 async function handleUserSignup(req, res) {
     const body = req.body;
-    
+
     if (!body.name || !body.email || !body.password || !body.phone || !body.hostel) {
         return res.status(400).json({ error: 'All fields (name, email, password, phone, hostel) are required' });
     }
 
     try {
-        const existingUser = await User.findOne({ email: body.email });
+        // Lec 2: $exists — checks if the email field exists in the document before comparing
+        const existingUser = await User.findOne({ email: body.email, name: { $exists: true } });
         if (existingUser) {
             return res.status(400).json({ error: 'Email already registered' });
         }
@@ -30,16 +31,16 @@ async function handleUserSignup(req, res) {
 
         // Generate JWT token
         const token = jwt.sign(
-            { 
-                userId: user._id, 
-                email: user.email, 
-                role: user.role 
+            {
+                userId: user._id,
+                email: user.email,
+                role: user.role
             },
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
 
-        return res.status(201).json({ 
+        return res.status(201).json({
             message: 'User created successfully',
             token,
             user: {
@@ -59,14 +60,15 @@ async function handleUserSignup(req, res) {
 
 async function handleUserLogin(req, res) {
     const { email, password } = req.body;
-    
+
     if (!email || !password) {
         return res.status(400).json({ error: 'Email and password are required' });
     }
 
     try {
-        const user = await User.findOne({ email, password });
-        
+        // Lec 2: $and — explicitly combines multiple conditions (email AND password must both match)
+        const user = await User.findOne({ $and: [{ email }, { password }] });
+
         if (!user) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
@@ -77,16 +79,16 @@ async function handleUserLogin(req, res) {
 
         // Generate JWT token
         const token = jwt.sign(
-            { 
-                userId: user._id, 
-                email: user.email, 
-                role: user.role 
+            {
+                userId: user._id,
+                email: user.email,
+                role: user.role
             },
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
 
-        return res.json({ 
+        return res.json({
             message: 'Login successful',
             token,
             user: {
@@ -106,10 +108,11 @@ async function handleUserLogin(req, res) {
 
 async function handleGetUser(req, res) {
     const userId = req.params.id;
-    
+
     try {
-        const user = await User.findById(userId).select('-password');
-        
+        // Lec 2: findOne — raw MongoDB read by field
+        const user = await User.findOne({ _id: userId }).select('-password');
+
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }

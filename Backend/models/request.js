@@ -29,6 +29,9 @@ const requestSchema = new mongoose.Schema({
         enum: ['active', 'fulfilled', 'cancelled'],
         default: 'active',
     },
+    tags: [{
+        type: String,  // Lec 5: Array field — enables $elemMatch, $push, $pull
+    }],
 }, {timestamps: true});
 
 const Request = mongoose.model("request", requestSchema);

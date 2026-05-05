@@ -6,10 +6,10 @@ const Request = require('../models/request');
 async function handleGetAllUsers(req, res) {
     try {
         const users = await User.find().select('-password');
-        
-        return res.json({ 
+
+        return res.json({
             count: users.length,
-            users 
+            users
         });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to fetch users' });
@@ -18,21 +18,22 @@ async function handleGetAllUsers(req, res) {
 
 async function handleBlockUser(req, res) {
     const userId = req.params.userId;
-    
+
     try {
-        const user = await User.findByIdAndUpdate(
-            userId,
-            { isBlocked: true },
+        // Lec 2: findOneAndUpdate — raw MongoDB update by field
+        const user = await User.findOneAndUpdate(
+            { _id: userId },
+            { $set: { isBlocked: true } }, // Lec 4: $set — updates only this field
             { new: true }
         ).select('-password');
-        
+
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        return res.json({ 
+        return res.json({
             message: 'User blocked successfully',
-            user 
+            user
         });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to block user' });
@@ -41,21 +42,22 @@ async function handleBlockUser(req, res) {
 
 async function handleUnblockUser(req, res) {
     const userId = req.params.userId;
-    
+
     try {
-        const user = await User.findByIdAndUpdate(
-            userId,
-            { isBlocked: false },
+        // Lec 2: findOneAndUpdate — raw MongoDB update by field
+        const user = await User.findOneAndUpdate(
+            { _id: userId },
+            { $set: { isBlocked: false } }, // Lec 4: $set — updates only this field
             { new: true }
         ).select('-password');
-        
+
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        return res.json({ 
+        return res.json({
             message: 'User unblocked successfully',
-            user 
+            user
         });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to unblock user' });
@@ -64,11 +66,11 @@ async function handleUnblockUser(req, res) {
 
 async function handleDeleteUser(req, res) {
     const userId = req.params.userId;
-    
+
     try {
-        const user = await User.findByIdAndDelete(userId);
-        
-        if (!user) {
+        // Lec 2: deleteOne — raw MongoDB delete by field
+        const result = await User.deleteOne({ _id: userId });
+        if (result.deletedCount === 0) {
             return res.status(404).json({ error: 'User not found' });
         }
 
@@ -81,13 +83,14 @@ async function handleDeleteUser(req, res) {
 // Listing Management
 async function handleGetAllListingsAdmin(req, res) {
     try {
-        const listings = await Listing.find()
+        // Lec 2: $in — matches listings whose status is in this array
+        const listings = await Listing.find({ status: { $in: ['available', 'borrowed', 'unavailable'] } })
             .populate('owner', 'name email phone hostel')
             .sort({ createdAt: -1 });
-        
-        return res.json({ 
+
+        return res.json({
             count: listings.length,
-            listings 
+            listings
         });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to fetch listings' });
@@ -96,11 +99,11 @@ async function handleGetAllListingsAdmin(req, res) {
 
 async function handleDeleteListingAdmin(req, res) {
     const listingId = req.params.listingId;
-    
+
     try {
-        const listing = await Listing.findByIdAndDelete(listingId);
-        
-        if (!listing) {
+        // Lec 2: deleteOne — raw MongoDB delete by field
+        const result = await Listing.deleteOne({ _id: listingId });
+        if (result.deletedCount === 0) {
             return res.status(404).json({ error: 'Listing not found' });
         }
 
@@ -116,10 +119,10 @@ async function handleGetAllRequestsAdmin(req, res) {
         const requests = await Request.find()
             .populate('requester', 'name email phone hostel')
             .sort({ createdAt: -1 });
-        
-        return res.json({ 
+
+        return res.json({
             count: requests.length,
-            requests 
+            requests
         });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to fetch requests' });
@@ -128,11 +131,11 @@ async function handleGetAllRequestsAdmin(req, res) {
 
 async function handleDeleteRequestAdmin(req, res) {
     const requestId = req.params.requestId;
-    
+
     try {
-        const request = await Request.findByIdAndDelete(requestId);
-        
-        if (!request) {
+        // Lec 2: deleteOne — raw MongoDB delete by field
+        const result = await Request.deleteOne({ _id: requestId });
+        if (result.deletedCount === 0) {
             return res.status(404).json({ error: 'Request not found' });
         }
 

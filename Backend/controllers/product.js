@@ -77,7 +77,8 @@ async function handleGetListing(req, res) {
     const listingId = req.params.id;
     
     try {
-        const listing = await Listing.findById(listingId)
+        // Lec 2: findOne — raw MongoDB read by field
+        const listing = await Listing.findOne({ _id: listingId })
             .populate('owner', 'name email phone hostel roomNumber');
         
         if (!listing) {
@@ -95,7 +96,8 @@ async function handleUpdateListing(req, res) {
     const updates = req.body;
     
     try {
-        const listing = await Listing.findById(listingId);
+        // Lec 2: findOne — raw MongoDB read to check ownership before updating
+        const listing = await Listing.findOne({ _id: listingId });
         
         if (!listing) {
             return res.status(404).json({ error: 'Listing not found' });
@@ -106,9 +108,10 @@ async function handleUpdateListing(req, res) {
             return res.status(403).json({ error: 'You can only update your own listings' });
         }
 
-        const updatedListing = await Listing.findByIdAndUpdate(
-            listingId,
-            updates,
+        // Lec 2: findOneAndUpdate — raw MongoDB update by field
+        const updatedListing = await Listing.findOneAndUpdate(
+            { _id: listingId },
+            { $set: updates }, // Lec 4: $set — updates only the provided fields
             { new: true }
         );
 
@@ -125,7 +128,8 @@ async function handleDeleteListing(req, res) {
     const listingId = req.params.id;
     
     try {
-        const listing = await Listing.findById(listingId);
+        // Lec 2: findOne — raw MongoDB read to check ownership before deleting
+        const listing = await Listing.findOne({ _id: listingId });
         
         if (!listing) {
             return res.status(404).json({ error: 'Listing not found' });
@@ -136,7 +140,8 @@ async function handleDeleteListing(req, res) {
             return res.status(403).json({ error: 'You can only delete your own listings' });
         }
 
-        await Listing.findByIdAndDelete(listingId);
+        // Lec 2: deleteOne — raw MongoDB delete by field
+        await Listing.deleteOne({ _id: listingId });
 
         return res.json({ message: 'Listing deleted successfully' });
     } catch (error) {
@@ -148,7 +153,8 @@ async function handleGetListingsByOwner(req, res) {
     const ownerId = req.params.ownerId;
     
     try {
-        const listings = await Listing.find({ owner: ownerId })
+        // Lec 2: $ne — exclude listings that are unavailable
+        const listings = await Listing.find({ owner: ownerId, status: { $ne: 'unavailable' } })
             .sort({ createdAt: -1 });
         
         return res.json({ 

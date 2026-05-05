@@ -38,6 +38,9 @@ const listingSchema = new mongoose.Schema({
     },
 }, {timestamps: true});
 
+// Lec 6: Compound Index — speeds up queries that filter by BOTH category AND status
+listingSchema.index({ category: 1, status: 1 });
+
 const Listing = mongoose.model("listing", listingSchema);
 
 module.exports = Listing;

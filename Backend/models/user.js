@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
         enum: ['user', 'admin'],
         default: 'user',
     },
-}, {timestamps: true});
+}, { timestamps: true });
 
 // Add post-save hook for debugging
 // userSchema.post('save', function(doc) {

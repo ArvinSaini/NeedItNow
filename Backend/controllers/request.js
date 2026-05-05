@@ -2,7 +2,7 @@ const Request = require('../models/request');
 
 async function handleCreateRequest(req, res) {
     const body = req.body;
-    
+
     if (!body.title || !body.description || !body.category) {
         return res.status(400).json({ error: 'All required fields must be provided' });
     }
@@ -15,11 +15,12 @@ async function handleCreateRequest(req, res) {
             requester: req.user.userId, // Get from JWT token
             urgency: body.urgency || 'medium',
             status: 'active',
+            tags: body.tags || [], // Lec 5: Array field — e.g. ["urgent", "hostel-A"]
         });
 
-        return res.status(201).json({ 
+        return res.status(201).json({
             message: 'Request created successfully',
-            requestId: request._id 
+            requestId: request._id
         });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to create request' });
@@ -28,13 +29,14 @@ async function handleCreateRequest(req, res) {
 
 async function handleGetAllRequests(req, res) {
     try {
-        const requests = await Request.find({ status: 'active' })
+        // Lec 2: $in — matches requests with status in this array
+        const requests = await Request.find({ status: { $in: ['active', 'fulfilled'] } })
             .populate('requester', 'name email phone hostel')
             .sort({ createdAt: -1 });
-        
-        return res.json({ 
+
+        return res.json({
             count: requests.length,
-            requests 
+            requests
         });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to fetch requests' });
@@ -43,11 +45,12 @@ async function handleGetAllRequests(req, res) {
 
 async function handleGetRequest(req, res) {
     const requestId = req.params.id;
-    
+
     try {
-        const request = await Request.findById(requestId)
+        // Lec 2: findOne — raw MongoDB read by field
+        const request = await Request.findOne({ _id: requestId })
             .populate('requester', 'name email phone hostel');
-        
+
         if (!request) {
             return res.status(404).json({ error: 'Request not found' });
         }
@@ -61,10 +64,11 @@ async function handleGetRequest(req, res) {
 async function handleUpdateRequest(req, res) {
     const requestId = req.params.id;
     const updates = req.body;
-    
+
     try {
-        const request = await Request.findById(requestId);
-        
+        // Lec 2: findOne — raw MongoDB read to verify ownership before updating
+        const request = await Request.findOne({ _id: requestId });
+
         if (!request) {
             return res.status(404).json({ error: 'Request not found' });
         }
@@ -74,15 +78,16 @@ async function handleUpdateRequest(req, res) {
             return res.status(403).json({ error: 'You can only update your own requests' });
         }
 
-        const updatedRequest = await Request.findByIdAndUpdate(
-            requestId,
-            updates,
+        // Lec 2: findOneAndUpdate — raw MongoDB update by field
+        const updatedRequest = await Request.findOneAndUpdate(
+            { _id: requestId },
+            { $set: updates }, // Lec 4: $set — updates only the provided fields
             { new: true }
         );
 
-        return res.json({ 
+        return res.json({
             message: 'Request updated successfully',
-            request: updatedRequest 
+            request: updatedRequest
         });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to update request' });
@@ -91,10 +96,11 @@ async function handleUpdateRequest(req, res) {
 
 async function handleDeleteRequest(req, res) {
     const requestId = req.params.id;
-    
+
     try {
-        const request = await Request.findById(requestId);
-        
+        // Lec 2: findOne — raw MongoDB read to verify ownership before deleting
+        const request = await Request.findOne({ _id: requestId });
+
         if (!request) {
             return res.status(404).json({ error: 'Request not found' });
         }
@@ -104,7 +110,8 @@ async function handleDeleteRequest(req, res) {
             return res.status(403).json({ error: 'You can only delete your own requests' });
         }
 
-        await Request.findByIdAndDelete(requestId);
+        // Lec 2: deleteOne — raw MongoDB delete by field
+        await Request.deleteOne({ _id: requestId });
 
         return res.json({ message: 'Request deleted successfully' });
     } catch (error) {
@@ -114,14 +121,19 @@ async function handleDeleteRequest(req, res) {
 
 async function handleGetRequestsByUser(req, res) {
     const userId = req.params.userId;
-    
+
     try {
-        const requests = await Request.find({ requester: userId })
+        // Lec 5: $elemMatch — finds requests where AT LEAST ONE tag matches the query
+        // e.g., find all requests this user tagged as 'urgent'
+        const tagFilter = req.query.tag
+            ? { tags: { $elemMatch: { $eq: req.query.tag } } }
+            : {};
+        const requests = await Request.find({ requester: userId, ...tagFilter })
             .sort({ createdAt: -1 });
-        
-        return res.json({ 
+
+        return res.json({
             count: requests.length,
-            requests 
+            requests
         });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to fetch requests' });

@@ -168,6 +168,17 @@ const ManageRequests = () => {
                 </div>
               </div>
 
+              {/* Status Badge — shows active / fulfilled / cancelled */}
+              <div className="mb-4">
+                <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                  request.status === 'active'    ? 'bg-green-100 text-green-700' :
+                  request.status === 'fulfilled' ? 'bg-blue-100 text-blue-700' :
+                  'bg-gray-200 text-gray-600'
+                }`}>
+                  {request.status?.toUpperCase()}
+                </span>
+              </div>
+
               <button
                 onClick={() => handleDeleteRequest(request._id)}
                 className="w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-semibold transition-all"
