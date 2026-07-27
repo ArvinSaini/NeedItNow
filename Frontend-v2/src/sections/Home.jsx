@@ -82,9 +82,7 @@ const Home = () => {
         setCategoryCounts(perCategory);
       }
       const allRequests = r.status === 'fulfilled' ? r.value.requests ?? [] : null;
-      const requests = allRequests
-        ? allRequests.filter((req) => String(req.status).toLowerCase() === 'active').length
-        : null;
+      const requests = allRequests ? allRequests.length : null;
       setCounts({ listings, requests });
     });
     return () => {
@@ -146,7 +144,7 @@ const Home = () => {
                 <div className="font-serif text-2xl leading-tight tabular-nums text-ink-900">
                   {counts.requests ?? '—'}
                 </div>
-                <div className="text-xs text-ink-400">open requests</div>
+                <div className="text-xs text-ink-400">requests</div>
               </div>
             </motion.div>
           </motion.div>
