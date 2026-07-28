@@ -72,7 +72,9 @@ const Home = () => {
     Promise.allSettled([apiFetch('/product'), apiFetch('/request')]).then(([p, r]) => {
       if (cancelled) return;
       const allListings = p.status === 'fulfilled' ? p.value.listings ?? [] : null;
-      const listings = allListings ? allListings.length : null;
+      const listings = allListings
+        ? allListings.filter((l) => String(l.status).toLowerCase() === 'available').length
+        : null;
       if (allListings) {
         const perCategory = {};
         allListings.forEach((l) => {
@@ -82,7 +84,9 @@ const Home = () => {
         setCategoryCounts(perCategory);
       }
       const allRequests = r.status === 'fulfilled' ? r.value.requests ?? [] : null;
-      const requests = allRequests ? allRequests.length : null;
+      const requests = allRequests
+        ? allRequests.filter((q) => String(q.status).toLowerCase() === 'active').length
+        : null;
       setCounts({ listings, requests });
     });
     return () => {
@@ -144,7 +148,7 @@ const Home = () => {
                 <div className="font-serif text-2xl leading-tight tabular-nums text-ink-900">
                   {counts.requests ?? '—'}
                 </div>
-                <div className="text-xs text-ink-400">requests</div>
+                <div className="text-xs text-ink-400">active requests</div>
               </div>
             </m.div>
           </m.div>
