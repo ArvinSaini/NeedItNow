@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { LuInstagram, LuLinkedin, LuGithub } from 'react-icons/lu';
 import Navbar from '../components/Navbar';
 import arvinPhoto from '../assets/arvin.jpg';
@@ -22,7 +22,7 @@ const Aboutus = () => (
         NeedItNow is built by a hostel student, for hostel students.
       </p>
 
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1 }}
@@ -50,7 +50,7 @@ const Aboutus = () => (
             })}
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       <p className="mt-8 text-sm text-ink-400">Connect with me on social media!</p>
     </main>

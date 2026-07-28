@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import {
   LuSearch,
   LuMessagesSquare,
@@ -232,14 +232,14 @@ const Dashboard = () => {
           <h1 className="text-2xl font-extrabold tracking-tight text-ink-900">{current.title}</h1>
           <p className="mt-0.5 text-sm text-ink-400">{current.sub}</p>
         </div>
-        <motion.div
+        <m.div
           key={current.id}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
         >
           {current.render()}
-        </motion.div>
+        </m.div>
       </main>
     </div>
   );

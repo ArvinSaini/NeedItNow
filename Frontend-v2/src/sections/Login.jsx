@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { LuArrowRight, LuCircleAlert } from 'react-icons/lu';
 import Navbar from '../components/Navbar';
 import Button from '../components/ui/Button';
@@ -36,7 +36,7 @@ const Login = () => {
     <div className="flex min-h-screen flex-col bg-white">
       <Navbar />
       <main className="auth-glow flex flex-1 items-center justify-center px-4 py-14">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
@@ -88,7 +88,7 @@ const Login = () => {
               Create an account
             </Link>
           </p>
-        </motion.div>
+        </m.div>
       </main>
     </div>
   );

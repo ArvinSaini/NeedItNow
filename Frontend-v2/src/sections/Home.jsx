@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import {
   LuArrowRight,
   LuHandshake,
@@ -97,29 +97,29 @@ const Home = () => {
       {/* ================= HERO ================= */}
       <section className="hero-wash border-b border-ink-200">
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[1.12fr_0.88fr] lg:py-20">
-          <motion.div initial="hidden" animate="visible" variants={stagger}>
-            <motion.span
+          <m.div initial="hidden" animate="visible" variants={stagger}>
+            <m.span
               variants={fadeUp}
               className="inline-flex items-center gap-2 rounded-full border border-cream-300 bg-cream-100 px-4 py-1.5 text-xs font-semibold text-cream-800"
             >
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary-500" />
               Made for hostel students
-            </motion.span>
+            </m.span>
 
-            <motion.h1
+            <m.h1
               variants={fadeUp}
               className="mt-5 text-5xl font-extrabold leading-[1.05] tracking-tight text-ink-900 sm:text-6xl"
             >
               Your hostel&apos;s
               <span className="serif-accent block text-primary-500">sharing hub.</span>
-            </motion.h1>
+            </m.h1>
 
-            <motion.p variants={fadeUp} className="mt-4 max-w-lg text-lg text-ink-600">
+            <m.p variants={fadeUp} className="mt-4 max-w-lg text-lg text-ink-600">
               Borrow, lend, buy and sell within your hostel community. Textbooks, kettles, cycles —
               someone next door already has it.
-            </motion.p>
+            </m.p>
 
-            <motion.div variants={fadeUp} className="mt-7 flex flex-wrap gap-3">
+            <m.div variants={fadeUp} className="mt-7 flex flex-wrap gap-3">
               <Button as={Link} to="/signup" variant="primary" size="lg">
                 Get started free
                 <LuArrowRight className="h-4 w-4" />
@@ -127,9 +127,9 @@ const Home = () => {
               <Button as={Link} to="/listings" variant="ghost" size="lg">
                 Browse items
               </Button>
-            </motion.div>
+            </m.div>
 
-            <motion.div variants={fadeUp} className="mt-9 flex items-end gap-7">
+            <m.div variants={fadeUp} className="mt-9 flex items-end gap-7">
               <div>
                 <div className="font-serif text-2xl leading-tight text-ink-900">100+</div>
                 <div className="text-xs text-ink-400">students</div>
@@ -146,11 +146,11 @@ const Home = () => {
                 </div>
                 <div className="text-xs text-ink-400">requests</div>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
 
           {/* Category mini-cards */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.15 }}
@@ -212,36 +212,36 @@ const Home = () => {
                 </Link>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       </section>
 
       {/* ================= FEATURES ================= */}
       <section className="mx-auto max-w-6xl px-4 pt-16 text-center sm:px-6">
-        <motion.div
+        <m.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
           variants={stagger}
         >
-          <motion.div variants={fadeUp} className="eyebrow">
+          <m.div variants={fadeUp} className="eyebrow">
             Why NeedItNow
-          </motion.div>
-          <motion.h2
+          </m.div>
+          <m.h2
             variants={fadeUp}
             className="mt-2 text-4xl font-extrabold tracking-tight text-ink-900"
           >
             Built for <span className="serif-accent text-primary-500">hostel life</span>.
-          </motion.h2>
-          <motion.p variants={fadeUp} className="mx-auto mt-3 max-w-xl text-ink-600">
+          </m.h2>
+          <m.p variants={fadeUp} className="mx-auto mt-3 max-w-xl text-ink-600">
             The simplest way to share, trade and connect with your hostel community.
-          </motion.p>
+          </m.p>
 
           <div className="mt-10 grid gap-4 text-left md:grid-cols-3">
             {FEATURES.map((feature) => {
               const { icon: Icon, tone, title, text } = feature;
               return (
-              <motion.div
+              <m.div
                 key={title}
                 variants={fadeUp}
                 className="rounded-2xl border border-ink-200 bg-white p-7 shadow-md shadow-ink-900/5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-ink-900/10"
@@ -255,37 +255,37 @@ const Home = () => {
                 </span>
                 <h3 className="text-lg font-bold text-ink-900">{title}</h3>
                 <p className="mt-1.5 text-sm text-ink-600">{text}</p>
-              </motion.div>
+              </m.div>
               );
             })}
           </div>
-        </motion.div>
+        </m.div>
       </section>
 
       {/* ================= HOW IT WORKS ================= */}
       <section id="how-it-works" className="mx-auto max-w-6xl scroll-mt-20 px-4 pt-16 text-center sm:px-6">
-        <motion.div
+        <m.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
           variants={stagger}
         >
-          <motion.div variants={fadeUp} className="eyebrow">
+          <m.div variants={fadeUp} className="eyebrow">
             How it works
-          </motion.div>
-          <motion.h2
+          </m.div>
+          <m.h2
             variants={fadeUp}
             className="mt-2 text-4xl font-extrabold tracking-tight text-ink-900"
           >
             Three steps, <span className="serif-accent text-primary-500">that&apos;s it</span>.
-          </motion.h2>
-          <motion.p variants={fadeUp} className="mx-auto mt-3 max-w-xl text-ink-600">
+          </m.h2>
+          <m.p variants={fadeUp} className="mx-auto mt-3 max-w-xl text-ink-600">
             From signing up to knocking on a door — the whole thing takes minutes.
-          </motion.p>
+          </m.p>
 
           <div className="mt-10 grid gap-4 text-left md:grid-cols-3">
             {STEPS.map((step, i) => (
-              <motion.div
+              <m.div
                 key={step.num}
                 variants={fadeUp}
                 className="relative rounded-2xl border border-cream-300 bg-cream-50 p-7"
@@ -298,15 +298,15 @@ const Home = () => {
                     <LuArrowRight className="h-3.5 w-3.5" />
                   </span>
                 )}
-              </motion.div>
+              </m.div>
             ))}
           </div>
-        </motion.div>
+        </m.div>
       </section>
 
       {/* ================= CTA BANNER ================= */}
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -328,7 +328,7 @@ const Home = () => {
               <LuArrowRight className="h-4 w-4" />
             </Button>
           </div>
-        </motion.div>
+        </m.div>
       </section>
 
       <Footer />

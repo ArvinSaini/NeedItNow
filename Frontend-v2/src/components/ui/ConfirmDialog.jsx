@@ -1,19 +1,19 @@
 // eslint-disable-next-line no-unused-vars
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { LuTriangleAlert } from 'react-icons/lu';
 import Button from './Button';
 
 const ConfirmDialog = ({ open, title, message, confirmLabel = 'Delete', onConfirm, onCancel }) => (
   <AnimatePresence>
     {open && (
-      <motion.div
+      <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/50 p-4"
         onClick={onCancel}
       >
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -36,8 +36,8 @@ const ConfirmDialog = ({ open, title, message, confirmLabel = 'Delete', onConfir
               {confirmLabel}
             </Button>
           </div>
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
     )}
   </AnimatePresence>
 );
