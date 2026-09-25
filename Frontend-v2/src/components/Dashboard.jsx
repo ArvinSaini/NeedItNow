@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
 import { m } from 'framer-motion';
@@ -26,7 +26,7 @@ import AddRequest from './AddRequest';
 import ManageUsers from './ManageUsers';
 import ManageListings from './ManageListings';
 import ManageRequests from './ManageRequests';
-import { clearSession, getUser } from '../lib/api';
+import { apiFetch, clearSession, getToken, getUser, setSession } from '../lib/api';
 
 const buildTabs = (setActiveTab) => [
   {
@@ -121,7 +121,24 @@ const buildTabs = (setActiveTab) => [
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const user = getUser();
+  const [user, setUser] = useState(getUser);
+
+  /* Refresh the cached user (role, hostel) and trip the session handler early if the token is dead.
+     Non-auth failures (legacy backend, network) keep the cached user. */
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch('/user/me', { auth: true })
+      .then((data) => {
+        if (cancelled || !data?.user) return;
+        setSession(getToken(), data.user);
+        setUser(data.user);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const isAdmin = user?.role === 'admin';
   const [activeTab, setActiveTab] = useState('browseListings');
   const [sidebarOpen, setSidebarOpen] = useState(false);
