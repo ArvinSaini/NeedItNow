@@ -66,10 +66,38 @@ const MyListings = () => {
   const handleEditChange = (e) => setEditForm({ ...editForm, [e.target.name]: e.target.value });
 
   const saveEdit = async (id) => {
+    const original = listings.find((l) => l._id === id);
+    if (!original) {
+      setEditingId(null);
+      return;
+    }
+    const next = {
+      title: editForm.title,
+      description: editForm.description,
+      category: editForm.category,
+      type: editForm.type,
+      price: Number(editForm.price) || 0,
+      status: editForm.status,
+    };
+    const prevNormalized = {
+      title: original.title,
+      description: original.description,
+      category: String(original.category).toLowerCase(),
+      type: String(original.type).toLowerCase(),
+      price: Number(original.price) || 0,
+      status: String(original.status).toLowerCase(),
+    };
+    const body = {};
+    for (const key of Object.keys(next)) {
+      if (next[key] !== prevNormalized[key]) body[key] = next[key];
+    }
+    if (Object.keys(body).length === 0) {
+      setEditingId(null);
+      return;
+    }
     setSaving(true);
     setError('');
     try {
-      const body = { ...editForm, price: Number(editForm.price) || 0 };
       await apiFetch(`/product/${id}`, { method: 'PUT', auth: true, body });
       setListings((prev) => prev.map((l) => (l._id === id ? { ...l, ...body } : l)));
       setEditingId(null);
@@ -191,13 +219,13 @@ const MyListings = () => {
                         <Badge tone={type.tone}>{type.label}</Badge>
                         <Badge tone="gray">{category.label}</Badge>
                       </div>
-                      <h3 className="line-clamp-2 wrap-anywhere font-bold tracking-tight text-ink-900">
-                        {listing.title}{' '}
+                      <h3 className="flex items-baseline gap-1.5 font-bold tracking-tight text-ink-900">
+                        <span className="line-clamp-2 wrap-anywhere">{listing.title}</span>
                         {Number(listing.price) > 0 ? (
-                          <span className="serif-accent text-lg text-primary-500">₹{formatPrice(listing.price)}</span>
+                          <span className="serif-accent shrink-0 text-lg text-primary-500">₹{formatPrice(listing.price)}</span>
                         ) : (
                           String(listing.type).toLowerCase() === 'lend' && (
-                            <span className="serif-accent text-lg text-emerald-600">Free</span>
+                            <span className="serif-accent shrink-0 text-lg text-emerald-600">Free</span>
                           )
                         )}
                       </h3>

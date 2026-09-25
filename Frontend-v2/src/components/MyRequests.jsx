@@ -65,11 +65,31 @@ const MyRequests = () => {
   const handleEditChange = (e) => setEditForm({ ...editForm, [e.target.name]: e.target.value });
 
   const saveEdit = async (id) => {
+    const original = requests.find((r) => r._id === id);
+    if (!original) {
+      setEditingId(null);
+      return;
+    }
+    const prevNormalized = {
+      title: original.title,
+      description: original.description,
+      category: String(original.category).toLowerCase(),
+      urgency: String(original.urgency).toLowerCase(),
+      status: String(original.status).toLowerCase(),
+    };
+    const body = {};
+    for (const key of Object.keys(editForm)) {
+      if (editForm[key] !== prevNormalized[key]) body[key] = editForm[key];
+    }
+    if (Object.keys(body).length === 0) {
+      setEditingId(null);
+      return;
+    }
     setSaving(true);
     setError('');
     try {
-      await apiFetch(`/request/${id}`, { method: 'PUT', auth: true, body: editForm });
-      setRequests((prev) => prev.map((r) => (r._id === id ? { ...r, ...editForm } : r)));
+      await apiFetch(`/request/${id}`, { method: 'PUT', auth: true, body });
+      setRequests((prev) => prev.map((r) => (r._id === id ? { ...r, ...body } : r)));
       setEditingId(null);
     } catch (err) {
       setError(err.message);

@@ -61,7 +61,16 @@ export async function apiFetch(path, { auth = false, method = 'GET', body, heade
     // no code (the deployed legacy backend sends 401 with no code).
     const reason = auth && (SESSION_END_REASONS[data.code] || (res.status === 401 ? 'expired' : null));
     if (reason) endSession(reason);
-    throw new Error(data.error || data.message || `Request failed (${res.status})`);
+    let message = data.error || data.message || `Request failed (${res.status})`;
+    // Backend-v2 sends the generic "Validation failed" plus a details array; surface the
+    // first field-level message instead so the user sees something actionable.
+    if (data.error === 'Validation failed' && Array.isArray(data.details) && data.details[0]?.message) {
+      const detail = data.details[0];
+      message = detail.field ? `${detail.field}: ${detail.message}` : detail.message;
+    }
+    const err = new Error(message);
+    err.status = res.status;
+    throw err;
   }
   return data;
 }
