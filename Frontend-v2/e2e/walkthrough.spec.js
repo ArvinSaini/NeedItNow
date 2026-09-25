@@ -8,6 +8,8 @@ const member = { name: 'Member Person', email: 'member@test.com', password: 'sec
 const MEMBER_LISTING = 'Member kettle for lending';
 const LONG_TITLE = 'x'.repeat(80);
 const DETAILS_TITLE = 'Trekking backpack with full trail history';
+const SHORT_TITLE = 'Cricket bat for weekend matches';
+const SHORT_DESCRIPTION = 'Cricket bat, good grip';
 const DETAILS_DESCRIPTION = [
   'This 50-litre trekking backpack has an adjustable aluminium frame, a detachable rain cover, and a built-in hydration sleeve for long treks.',
   'The zips are YKK grade and have survived three monsoon seasons on the trail without ever failing under load. It comes with a small detachable daypack, spare buckles, a curved needle, and heavy nylon thread for quick repairs far from any shop.',
@@ -228,6 +230,7 @@ test('the details dialog shows the full description a clamped card hides', async
   await login(page, admin);
   await expect(page).toHaveURL(/\/dashboard/);
   await addListing(page, { title: DETAILS_TITLE, description: DETAILS_DESCRIPTION });
+  await addListing(page, { title: SHORT_TITLE, description: SHORT_DESCRIPTION });
 
   await page.goto('/listings');
   await page.getByPlaceholder('Search for textbooks, cycles, kettles…').fill(DETAILS_TITLE);
@@ -235,8 +238,8 @@ test('the details dialog shows the full description a clamped card hides', async
   await expect(card).toBeVisible();
 
   // The card clamps the description to 2 lines, so the tail of it is not in the DOM's
-  // visible text — only "View details" opens the dialog that carries the full copy.
-  await page.getByRole('button', { name: 'View details' }).click();
+  // visible text — only "Full details" opens the dialog that carries the full copy.
+  await page.getByRole('button', { name: 'Full details' }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   await expect(dialog.getByText(DETAILS_TITLE)).toBeVisible();
@@ -247,10 +250,80 @@ test('the details dialog shows the full description a clamped card hides', async
   await expect(dialog).toBeHidden();
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole('button', { name: 'View details' }).click();
+  await page.getByRole('button', { name: 'Full details' }).click();
   await expect(dialog).toBeVisible();
   await snap(page, '10-details-dialog-mobile');
 
   await dialog.getByRole('button', { name: 'Close' }).click();
   await expect(dialog).toBeHidden();
+});
+
+test('a card whose description fits fully has no "Full details" link', async ({ page }) => {
+  await login(page, admin);
+  await expect(page).toHaveURL(/\/dashboard/);
+
+  await page.goto('/listings');
+  await page.getByPlaceholder('Search for textbooks, cycles, kettles…').fill(SHORT_TITLE);
+  const shortCard = page.locator('h3', { hasText: SHORT_TITLE }).first();
+  await expect(shortCard).toBeVisible();
+  await expect(page.getByText(SHORT_DESCRIPTION, { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Full details' })).toHaveCount(0);
+});
+
+test('pasting text that exceeds the description limit shows a cut warning that clears on edit', async ({ page, context }) => {
+  await login(page, admin);
+  await expect(page).toHaveURL(/\/dashboard/);
+  await tab(page, 'Add listing').click();
+
+  // Headless Chromium needs explicit clipboard permission before navigator.clipboard.writeText
+  // (called with no user gesture from page.evaluate) is allowed to succeed.
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.evaluate((text) => navigator.clipboard.writeText(text), 'z'.repeat(600));
+
+  const description = page.getByLabel('Description');
+  await description.click();
+  await page.keyboard.press('ControlOrMeta+V');
+
+  // The browser's native maxLength truncation cuts the paste to 500 chars with no signal of
+  // its own — the warning below is what tells the user it happened.
+  await expect(description).toHaveValue('z'.repeat(500));
+  await expect(page.getByText('Your text was cut to 500 characters.')).toBeVisible();
+  await snap(page, '11-paste-truncated-warning');
+
+  await page.keyboard.press('Backspace');
+  await page.keyboard.type('z');
+  await expect(description).toHaveValue('z'.repeat(500));
+  await expect(page.getByText('Your text was cut to 500 characters.')).toBeHidden();
+});
+
+test('navbar shows Log out when logged in and updates instantly on logout, including other tabs', async ({ page, context }) => {
+  await login(page, admin);
+  await expect(page).toHaveURL(/\/dashboard/);
+
+  // Home also has a "Log in" link in its footer, so scope every assertion to the navbar itself.
+  const nav = page.locator('nav');
+
+  await page.goto('/listings');
+  await expect(nav.getByRole('button', { name: 'Log out' })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Log in', exact: true })).toHaveCount(0);
+
+  // A second tab in the same context shares localStorage; it starts logged in too, and should
+  // flip to logged-out the instant the first tab logs out — no reload needed.
+  const secondPage = await context.newPage();
+  const secondNav = secondPage.locator('nav');
+  await secondPage.goto('/requests');
+  await expect(secondNav.getByRole('button', { name: 'Log out' })).toBeVisible();
+
+  await nav.getByRole('button', { name: 'Log out' }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(nav.getByRole('link', { name: 'Log in', exact: true })).toBeVisible();
+  await expect(nav.getByRole('button', { name: 'Log out' })).toHaveCount(0);
+
+  await expect(secondNav.getByRole('link', { name: 'Log in', exact: true })).toBeVisible();
+  await expect(secondNav.getByRole('button', { name: 'Log out' })).toHaveCount(0);
+  await secondPage.close();
+
+  // Logging back in must still work after a plain logout.
+  await login(page, admin);
+  await expect(page).toHaveURL(/\/dashboard/);
 });

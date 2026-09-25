@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { LuMenu, LuX } from 'react-icons/lu';
-import { getToken } from '../lib/api';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { LuLogOut, LuMenu, LuX } from 'react-icons/lu';
+import { clearSession } from '../lib/api';
+import useSession from '../lib/useSession';
 import Wordmark from './ui/Wordmark';
 
 const NAV_LINKS = [
@@ -14,7 +15,14 @@ const NAV_LINKS = [
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
-  const loggedIn = Boolean(getToken());
+  const navigate = useNavigate();
+  const { token } = useSession();
+  const loggedIn = Boolean(token);
+
+  const handleLogout = () => {
+    clearSession();
+    navigate('/');
+  };
 
   return (
     <nav className="brand-gradient sticky top-0 z-40 shadow-md shadow-primary-900/10">
@@ -48,9 +56,20 @@ const Navbar = () => {
               Dashboard
             </Link>
           )}
-          <Link to="/login" className="text-sm font-medium text-white/85 transition-colors hover:text-white">
-            Log in
-          </Link>
+          {loggedIn ? (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-white/85 transition-colors hover:text-white"
+            >
+              <LuLogOut className="h-4 w-4" />
+              Log out
+            </button>
+          ) : (
+            <Link to="/login" className="text-sm font-medium text-white/85 transition-colors hover:text-white">
+              Log in
+            </Link>
+          )}
           <Link
             to="/signup"
             className="rounded-full bg-white px-5 py-2 text-sm font-bold text-primary-700 shadow-md shadow-primary-900/20 transition-transform hover:-translate-y-0.5"
@@ -96,13 +115,27 @@ const Navbar = () => {
                 Dashboard
               </Link>
             )}
-            <Link
-              to="/login"
-              onClick={() => setMobileOpen(false)}
-              className="block rounded-xl px-4 py-2.5 text-sm font-medium text-ink-600 hover:bg-cream-50"
-            >
-              Log in
-            </Link>
+            {loggedIn ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileOpen(false);
+                  handleLogout();
+                }}
+                className="flex w-full items-center gap-2 rounded-xl px-4 py-2.5 text-left text-sm font-medium text-ink-600 hover:bg-cream-50"
+              >
+                <LuLogOut className="h-4 w-4" />
+                Log out
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                onClick={() => setMobileOpen(false)}
+                className="block rounded-xl px-4 py-2.5 text-sm font-medium text-ink-600 hover:bg-cream-50"
+              >
+                Log in
+              </Link>
+            )}
             <Link
               to="/signup"
               onClick={() => setMobileOpen(false)}

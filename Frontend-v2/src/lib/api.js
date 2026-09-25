@@ -23,8 +23,10 @@ export function getUser() {
   }
 }
 
-/* Fired whenever setSession stores a (possibly refreshed) user, so components in the same tab
-   can stay in sync without relying on the `storage` event, which only fires in OTHER tabs. */
+/* Fired whenever the session changes in this tab — setSession stores a (possibly refreshed)
+   user (detail = that user) and clearSession logs out (detail = null) — so components in the
+   same tab can stay in sync without relying on the `storage` event, which only fires in OTHER
+   tabs. One event covers both directions so listeners only need a single subscription. */
 export const SESSION_USER_EVENT = 'session-user';
 
 export function setSession(token, user) {
@@ -38,6 +40,7 @@ export function clearSession() {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
   localStorage.removeItem('sessionEndReason');
+  window.dispatchEvent(new CustomEvent(SESSION_USER_EVENT, { detail: null }));
 }
 
 /* Clears the session and sends the user to the login page with an explanation banner. Stamps

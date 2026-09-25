@@ -5,10 +5,12 @@ import DetailsDialog from './ui/DetailsDialog';
 import PriceTag from './ui/PriceTag';
 import PersonRow from './ui/PersonRow';
 import { getCategory, getListingStatus, getListingType } from '../lib/constants';
+import useIsClamped from '../lib/useIsClamped';
 
 const ListingCard = ({ listing, children }) => {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const viewDetailsRef = useRef(null);
+  const [descRef, isTruncated] = useIsClamped(listing.description);
   const category = getCategory(listing.category);
   const status = getListingStatus(listing.status);
   const type = getListingType(listing.type);
@@ -16,11 +18,13 @@ const ListingCard = ({ listing, children }) => {
   const isLend = String(listing.type).toLowerCase() === 'lend';
   const price = Number(listing.price) || 0;
 
-  // Whole card is a click-to-open-details convenience; any nested button/link
-  // (the "View details" button itself, or a future action button) handles
-  // its own click and must not also toggle the dialog a second time. A click
-  // that ends a text selection (drag-to-select) shouldn't open it either.
+  // Whole card is a click-to-open-details convenience, but only when there's more to see
+  // (i.e. the description is actually clamped) — otherwise clicking the card is a no-op.
+  // Any nested button/link (the "Full details" button itself, or a future action button)
+  // handles its own click and must not also toggle the dialog a second time. A click that
+  // ends a text selection (drag-to-select) shouldn't open it either.
   const handleCardClick = (e) => {
+    if (!isTruncated) return;
     if (e.target.closest('button, a')) return;
     if (window.getSelection?.().toString()) return;
     setDetailsOpen(true);
@@ -30,7 +34,7 @@ const ListingCard = ({ listing, children }) => {
     <>
       <div
         onClick={handleCardClick}
-        className="flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white shadow-md shadow-ink-900/5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-ink-900/10"
+        className={`flex flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white shadow-md shadow-ink-900/5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-ink-900/10 ${isTruncated ? 'cursor-pointer' : ''}`}
       >
         <div className="flex h-24 items-center justify-center border-b border-ink-200 bg-gradient-to-br from-cream-50 to-cream-100 text-primary-700">
           <Icon className="h-8 w-8 opacity-90" />
@@ -45,16 +49,20 @@ const ListingCard = ({ listing, children }) => {
             <span className="line-clamp-2 wrap-anywhere">{listing.title}</span>
             <PriceTag price={price} isLend={isLend} size="card" />
           </h3>
-          <p className="mt-1 line-clamp-2 wrap-anywhere flex-1 text-sm text-ink-600">{listing.description}</p>
-          <button
-            ref={viewDetailsRef}
-            type="button"
-            onClick={() => setDetailsOpen(true)}
-            className="mt-1.5 inline-flex w-fit items-center gap-1 text-xs font-semibold text-primary-600 transition hover:text-primary-700"
-          >
-            View details
-            <LuArrowRight className="h-3 w-3" />
-          </button>
+          <p ref={descRef} className="mt-1 line-clamp-2 wrap-anywhere flex-1 text-sm text-ink-600">
+            {listing.description}
+          </p>
+          {isTruncated && (
+            <button
+              ref={viewDetailsRef}
+              type="button"
+              onClick={() => setDetailsOpen(true)}
+              className="mt-1.5 inline-flex w-fit items-center gap-1 text-xs font-semibold text-primary-600 transition hover:text-primary-700"
+            >
+              Full details
+              <LuArrowRight className="h-3 w-3" />
+            </button>
+          )}
           <div className="mt-3 border-t border-dashed border-ink-200 pt-3">
             <PersonRow person={listing.owner} size="card" />
           </div>
