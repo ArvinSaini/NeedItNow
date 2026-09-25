@@ -52,6 +52,24 @@ async function addListing(page, { title, description }) {
   await expect(page.getByRole('heading', { name: 'My listings' })).toBeVisible();
 }
 
+test('signup shows an inline error for an invalid email and blocks submit until it is fixed', async ({ page }) => {
+  await page.goto('/signup');
+  await page.getByLabel('Full name').fill('Invalid Email Person');
+  const email = page.getByLabel('Email');
+  await email.fill('a@b.c');
+  await expect(page.getByText('Enter a valid email like name@gmail.com')).toBeVisible();
+
+  await page.getByLabel('Password').fill('secret123');
+  await page.getByLabel('Phone (10 digits)').fill('9999999999');
+  await page.getByLabel('Hostel').fill('H9');
+  await page.getByLabel('Room number').fill('909');
+  await page.getByRole('button', { name: 'Create free account' }).click();
+  await expect(page).toHaveURL(/\/signup/); // blocked: no navigation to /dashboard
+
+  await email.fill('validcheck@test.com');
+  await expect(page.getByText('Enter a valid email like name@gmail.com')).toBeHidden();
+});
+
 test('admin signs up and sees the admin panel and the account tab', async ({ page }) => {
   await signup(page, admin);
   await expect(tab(page, 'Manage users')).toBeVisible();

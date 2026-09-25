@@ -76,6 +76,11 @@ export const LIMITS = {
   password: { min: 6, max: 64 },
 };
 
+/* Must match Backend-v2 src/config/constants.js EMAIL_PATTERN exactly. Applied to the
+   already-trimmed, lowercased email at SIGNUP only (Login keeps its lighter check). */
+export const EMAIL_PATTERN = /^[a-z0-9]+([._+-][a-z0-9]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/;
+export const EMAIL_MESSAGE = 'Enter a valid email like name@gmail.com';
+
 const inr = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 });
 export function formatPrice(value) {
   return inr.format(Number(value) || 0);

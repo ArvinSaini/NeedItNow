@@ -8,6 +8,7 @@ import Button from '../components/ui/Button';
 import { Input } from '../components/ui/Field';
 import Wordmark from '../components/ui/Wordmark';
 import { apiFetch, setSession } from '../lib/api';
+import { EMAIL_PATTERN, EMAIL_MESSAGE } from '../lib/constants';
 
 const FIELDS = [
   { name: 'name', label: 'Full name', type: 'text', placeholder: 'Your name', maxLength: 50 },
@@ -28,6 +29,7 @@ const SANITIZERS = {
 
 const validate = (form) => {
   if (form.name.trim().length < 2) return 'Please enter your full name (at least 2 letters).';
+  if (!EMAIL_PATTERN.test(form.email)) return EMAIL_MESSAGE;
   if (form.password.length < 6) return 'Password must be at least 6 characters.';
   if (!/^\d{10}$/.test(form.phone)) return 'Phone number must be exactly 10 digits.';
   if (!form.hostel.trim()) return 'Please enter your hostel.';
@@ -42,12 +44,19 @@ const Signup = () => {
   );
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
+
+  const emailError = emailTouched && form.email && !EMAIL_PATTERN.test(form.email) ? EMAIL_MESSAGE : '';
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     const sanitized = SANITIZERS[name] ? SANITIZERS[name](value) : value;
+    if (name === 'email') setEmailTouched(true);
+    if (error) setError('');
     setForm({ ...form, [name]: sanitized });
   };
+
+  const handleEmailBlur = () => setEmailTouched(true);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -106,10 +115,12 @@ const Signup = () => {
                   name={field.name}
                   value={form[field.name]}
                   onChange={handleChange}
+                  onBlur={field.name === 'email' ? handleEmailBlur : undefined}
                   placeholder={field.placeholder}
                   maxLength={field.maxLength}
                   minLength={field.minLength}
                   inputMode={field.inputMode}
+                  error={field.name === 'email' ? emailError : undefined}
                   required
                 />
               ))}
