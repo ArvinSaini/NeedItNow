@@ -1,8 +1,15 @@
 import { z } from 'zod';
-import { LIMITS } from '../../config/constants.js';
+import { EMAIL_PATTERN, LIMITS } from '../../config/constants.js';
 import { idParams } from '../../utils/objectId.js';
 
 const email = z.string().trim().toLowerCase().max(LIMITS.email.max).pipe(z.email('Enter a valid email'));
+// Stricter than LOGIN's `email` above: SIGNUP only, so no existing user gets locked out by this rule.
+const signupEmail = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .max(LIMITS.email.max)
+  .regex(EMAIL_PATTERN, 'Enter a valid email like name@gmail.com');
 const password = z
   .string()
   .min(LIMITS.password.min, `Password must be at least ${LIMITS.password.min} characters`)
@@ -15,7 +22,7 @@ export const signupSchema = z.object({
     .min(LIMITS.name.min, `Name must be at least ${LIMITS.name.min} letters`)
     .max(LIMITS.name.max)
     .regex(/^[a-zA-Z\s.'-]+$/, 'Name can only contain letters'),
-  email,
+  email: signupEmail,
   password,
   phone: z.string().regex(/^\d{10}$/, 'Phone number must be exactly 10 digits'),
   hostel: z.string().trim().min(LIMITS.hostel.min, 'Hostel is required').max(LIMITS.hostel.max),

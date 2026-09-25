@@ -9,6 +9,10 @@ export const ROLES = ['user', 'admin'];
 // Fields safe to expose about a listing/request owner to any caller (no email/password internals beyond this).
 export const PUBLIC_USER_FIELDS = 'name email phone hostel roomNumber';
 
+// Owner-approved stricter email format, applied to the already-trimmed, lowercased email at SIGNUP only.
+// Frontend-v2 mirrors this exact pattern in src/lib/constants.jsx as EMAIL_PATTERN.
+export const EMAIL_PATTERN = /^[a-z0-9]+([._+-][a-z0-9]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/;
+
 export const LIMITS = {
   name: { min: 2, max: 50 },
   email: { max: 80 },

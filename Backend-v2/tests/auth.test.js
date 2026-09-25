@@ -48,6 +48,60 @@ describe('POST /user/signup', () => {
   });
 });
 
+describe('POST /user/signup - stricter email format', () => {
+  const rejects = [
+    'a@b',
+    'a@b.c',
+    '.rahul@gmail.com',
+    'rahul.@gmail.com',
+    'rahul..k@gmail.com',
+    'rahul@gmail',
+    'test@localhost',
+    '1@2.3',
+    'rahul@.com',
+    // Passes zod's lighter z.email() (what LOGIN keeps using) but must fail the stricter pattern.
+    '-a@b.com',
+  ];
+  for (const email of rejects) {
+    it(`rejects ${email}`, async () => {
+      const res = await api().post('/user/signup').send(validUser({ email }));
+      assert.equal(res.status, 400);
+      assert.equal(res.body.error, 'Validation failed');
+      const field = res.body.details.find((d) => d.field === 'email');
+      assert.ok(field, `expected an email validation error for ${email}`);
+    });
+  }
+
+  const accepts = ['rahul123@gmail.com', 'rahul.k@college.ac.in', 'a+b@mail.in', 'x_y-z@domain.co'];
+  for (const email of accepts) {
+    it(`accepts ${email}`, async () => {
+      const res = await api().post('/user/signup').send(validUser({ email }));
+      assert.equal(res.status, 201);
+      assert.equal(res.body.user.email, email);
+    });
+  }
+});
+
+describe('POST /user/login - stricter signup email rule does not lock out existing users', () => {
+  it('logs in a pre-existing user whose email fails the new signup pattern', async () => {
+    // '-a@b.com' passes zod's lighter z.email() (what LOGIN still uses) but fails the
+    // stricter EMAIL_PATTERN now enforced at signup, since a local part may not start with '-'.
+    const oddEmail = '-a@b.com';
+    await User.collection.insertOne({
+      name: 'Odd Email',
+      email: oddEmail,
+      password: 'secret123',
+      phone: '9876543210',
+      hostel: 'H4',
+      role: 'user',
+      isBlocked: false,
+    });
+    const res = await api().post('/user/login').send({ email: oddEmail, password: 'secret123' });
+    assert.equal(res.status, 200);
+    assert.equal(res.body.user.email, oddEmail);
+  });
+});
+
 describe('POST /user/login', () => {
   it('logs in with correct credentials', async () => {
     const { user, password } = await signup();
