@@ -21,12 +21,12 @@ const ListingCard = ({ listing, children }) => {
           <Badge tone={type.tone}>{type.label}</Badge>
           <Badge tone="gray">{category.label}</Badge>
         </div>
-        <h3 className="line-clamp-2 wrap-anywhere font-bold tracking-tight text-ink-900">
-          {listing.title}{' '}
+        <h3 className="flex items-baseline gap-1.5 font-bold tracking-tight text-ink-900">
+          <span className="line-clamp-2 wrap-anywhere">{listing.title}</span>
           {price > 0 ? (
-            <span className="serif-accent text-lg text-primary-500">₹{formatPrice(price)}</span>
+            <span className="serif-accent shrink-0 text-lg text-primary-500">₹{formatPrice(price)}</span>
           ) : (
-            isLend && <span className="serif-accent text-lg text-emerald-600">Free</span>
+            isLend && <span className="serif-accent shrink-0 text-lg text-emerald-600">Free</span>
           )}
         </h3>
         <p className="mt-1 line-clamp-2 wrap-anywhere flex-1 text-sm text-ink-600">{listing.description}</p>
