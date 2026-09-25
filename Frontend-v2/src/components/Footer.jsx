@@ -113,7 +113,7 @@ const Footer = () => (
     {/* Giant wordmark */}
     <div
       aria-hidden="true"
-      className="brand-gradient-text mx-auto -mb-[0.16em] mt-5 select-none whitespace-nowrap text-center text-[clamp(4rem,14.5vw,12.5rem)] font-extrabold leading-[0.9] tracking-[-0.045em]"
+      className="brand-gradient-text mx-auto -mb-[0.08em] mt-5 select-none whitespace-nowrap text-center text-[clamp(4rem,14.5vw,12.5rem)] font-extrabold leading-[0.9] tracking-[-0.045em]"
     >
       Need<span className="serif-accent tracking-[-0.02em]">It</span>Now
     </div>
