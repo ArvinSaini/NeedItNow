@@ -28,7 +28,7 @@ import Account from './Account';
 import ManageUsers from './ManageUsers';
 import ManageListings from './ManageListings';
 import ManageRequests from './ManageRequests';
-import { apiFetch, clearSession, getToken, getUser, setSession } from '../lib/api';
+import { apiFetch, clearSession, getToken, getUser, setSession, SESSION_USER_EVENT } from '../lib/api';
 
 const buildTabs = ({ setActiveTab, user }) => [
   {
@@ -139,9 +139,12 @@ const Dashboard = () => {
   const [user, setUser] = useState(getUser);
 
   /* Refresh the cached user (role, hostel, block status) on mount, and trip the session handler
-     early if the token is already dead. The app-wide useSessionWatch (mounted in App.jsx) covers
-     ongoing polling/visibility/focus/cross-tab checks while any page, including this one, stays
-     open. Non-auth failures (legacy backend, network) keep the cached user. */
+     early if the token is already dead. Non-auth failures (legacy backend, network) keep the
+     cached user. The app-wide useSessionWatch (mounted in App.jsx) covers ongoing
+     polling/visibility/focus/cross-tab checks while any page, including this one, stays open —
+     it calls setSession() on every successful recheck, which dispatches SESSION_USER_EVENT in
+     this same tab (a `storage` event only fires in OTHER tabs), so subscribe to that to keep
+     `user` state (role, hostel, admin tab visibility) fresh without a second poll here. */
   useEffect(() => {
     let cancelled = false;
     apiFetch('/user/me', { auth: true })
@@ -151,8 +154,11 @@ const Dashboard = () => {
         setUser(data.user);
       })
       .catch(() => {});
+    const onSessionUser = (e) => setUser(e.detail);
+    window.addEventListener(SESSION_USER_EVENT, onSessionUser);
     return () => {
       cancelled = true;
+      window.removeEventListener(SESSION_USER_EVENT, onSessionUser);
     };
   }, []);
 

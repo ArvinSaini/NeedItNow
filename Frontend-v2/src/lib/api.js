@@ -23,23 +23,32 @@ export function getUser() {
   }
 }
 
+/* Fired whenever setSession stores a (possibly refreshed) user, so components in the same tab
+   can stay in sync without relying on the `storage` event, which only fires in OTHER tabs. */
+export const SESSION_USER_EVENT = 'session-user';
+
 export function setSession(token, user) {
   localStorage.removeItem('sessionEndReason'); // fresh login, no stale reason for other tabs
   localStorage.setItem('token', token);
   localStorage.setItem('user', JSON.stringify(user));
+  window.dispatchEvent(new CustomEvent(SESSION_USER_EVENT, { detail: user }));
 }
 
 export function clearSession() {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
+  localStorage.removeItem('sessionEndReason');
 }
 
 /* Clears the session and sends the user to the login page with an explanation banner. Stamps
-   the reason first so other open tabs (which only see the `token` key disappear via the
-   `storage` event) know why and can show the same banner instead of a bare redirect. */
+   the reason BEFORE removing the token (clearSession() also removes any stale reason, so it
+   can't run first here) so other open tabs — which only see the `token` key disappear via the
+   `storage` event — already have the reason in place when they react to that removal, instead
+   of a bare redirect. */
 export function endSession(reason) {
   localStorage.setItem('sessionEndReason', reason);
-  clearSession();
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
   window.location.assign(`/login?reason=${reason}`);
 }
 

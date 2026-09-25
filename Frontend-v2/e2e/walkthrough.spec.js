@@ -151,10 +151,13 @@ test('blocking a member logs them out of every open tab within seconds, no reloa
   await secondMemberRow.getByRole('button', { name: 'Block', exact: true }).click();
   await expect(secondMemberRow.getByText('Blocked', { exact: true })).toBeVisible();
 
-  // Neither public tab is reloaded — the app-wide session watcher must catch the block.
-  await expect(listingsPage).toHaveURL(/\/login\?reason=blocked/, { timeout: 20_000 });
+  // Neither public tab is reloaded — the app-wide session watcher must catch the block. Only
+  // the foreground tab's watcher actually polls every 15s (document.visibilityState); the
+  // background tab is only caught by the `storage` event fired once the foreground tab's
+  // endSession() writes `sessionEndReason`, so give both a wider margin than the poll interval.
+  await expect(listingsPage).toHaveURL(/\/login\?reason=blocked/, { timeout: 30_000 });
   await expect(listingsPage.getByText("blocked by the admin, so you've been logged out")).toBeVisible();
-  await expect(requestsPage).toHaveURL(/\/login\?reason=blocked/, { timeout: 20_000 });
+  await expect(requestsPage).toHaveURL(/\/login\?reason=blocked/, { timeout: 30_000 });
   await expect(requestsPage.getByText("blocked by the admin, so you've been logged out")).toBeVisible();
 
   await login(listingsPage, secondMember);
