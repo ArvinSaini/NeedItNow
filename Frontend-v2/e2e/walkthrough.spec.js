@@ -7,6 +7,12 @@ const admin = { name: 'Admin Person', email: 'admin@test.com', password: 'secret
 const member = { name: 'Member Person', email: 'member@test.com', password: 'secret123', phone: '9876543211', hostel: 'H2', room: '202' };
 const MEMBER_LISTING = 'Member kettle for lending';
 const LONG_TITLE = 'x'.repeat(80);
+const DETAILS_TITLE = 'Trekking backpack with full trail history';
+const DETAILS_DESCRIPTION = [
+  'This 50-litre trekking backpack has an adjustable aluminium frame, a detachable rain cover, and a built-in hydration sleeve for long treks.',
+  'The zips are YKK grade and have survived three monsoon seasons on the trail without ever failing under load. It comes with a small detachable daypack, spare buckles, a curved needle, and heavy nylon thread for quick repairs far from any shop.',
+  'Selling only because I upgraded to a lighter carbon frame model ahead of next season.',
+].join('\n\n');
 
 const tab = (page, name) => page.getByRole('button', { name, exact: true });
 const fitsInBox = (locator) => locator.evaluate((el) => el.scrollWidth <= el.clientWidth + 1);
@@ -198,4 +204,35 @@ test('admin cannot block or delete themselves, and deleting a member removes the
   await expect(page.locator('h3', { hasText: LONG_TITLE })).toHaveCount(1); // admin's listing survives
   await expect(page.getByText(MEMBER_LISTING)).toHaveCount(0); // member's listing cascaded away
   await snap(page, '08-admin-panel-after-delete', { fullPage: true });
+});
+
+test('the details dialog shows the full description a clamped card hides', async ({ page }) => {
+  await login(page, admin);
+  await expect(page).toHaveURL(/\/dashboard/);
+  await addListing(page, { title: DETAILS_TITLE, description: DETAILS_DESCRIPTION });
+
+  await page.goto('/listings');
+  await page.getByPlaceholder('Search for textbooks, cycles, kettles…').fill(DETAILS_TITLE);
+  const card = page.locator('h3', { hasText: DETAILS_TITLE }).first();
+  await expect(card).toBeVisible();
+
+  // The card clamps the description to 2 lines, so the tail of it is not in the DOM's
+  // visible text — only "View details" opens the dialog that carries the full copy.
+  await page.getByRole('button', { name: 'View details' }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByText(DETAILS_TITLE)).toBeVisible();
+  await expect(dialog.getByText('Selling only because I upgraded to a lighter carbon frame model ahead of next season.')).toBeVisible();
+  await snap(page, '09-details-dialog');
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole('button', { name: 'View details' }).click();
+  await expect(dialog).toBeVisible();
+  await snap(page, '10-details-dialog-mobile');
+
+  await dialog.getByRole('button', { name: 'Close' }).click();
+  await expect(dialog).toBeHidden();
 });
