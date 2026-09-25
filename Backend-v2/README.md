@@ -77,36 +77,23 @@ New in v2: `GET /user/me`, `PUT /user/password` (`{ currentPassword, newPassword
 | `ADMIN_EMAILS` | no | comma-separated; promoted at signup |
 | `CORS_ORIGINS` | no | comma-separated; empty allows all (warns) |
 
-## Deploying to Azure (when ready)
+## Deploying to Azure (current state)
 
-**Pre-flip checklist:**
+`.github/workflows/cicd.yml` deploys **this** package (`Backend-v2`) to Azure App Service on every push to `main`: Node 24, `npm ci --omit=dev` in `Backend-v2`, `package: Backend-v2`. The legacy `Backend/` is no longer deployed by CI; it stays in the repo untouched for reference.
 
-- Every signed-in user is logged out once at the flip: legacy tokens carry `userId`, not `sub`, so v2 rejects them with 401 `TOKEN_INVALID` and Frontend-v2 shows its "session expired" banner. This is expected, one-time, and needs no user communication beyond that banner.
-- v2 refuses to boot if `JWT_SECRET` is under 16 characters — confirm the App Service setting before the flip, not after.
-- Run the email-lowercase migration below against production before the flip, not after (see "Before flipping" immediately below).
-- After deploying, verify `req.ip` on the App Service actually resolves to the client's real address (not the load balancer's) — Azure's proxy setup can vary; check a live rate-limit response's key behavior if in doubt.
-- The global limiter is 300 requests per 15 minutes **per IP**. A whole hostel behind one NAT/router shares that budget. Watch for 429s clustering from a single hostel IP after the flip and raise the limit if students hit it.
+**Remaining Azure-side checks (App Service configuration, not code):**
 
-**Before flipping (one-time data step):** the legacy backend stored emails exactly as typed; v2 lowercases email on input and looks up by exact match. Any legacy account with a mixed-case email would stop being found. Run this against the production database first:
+- Stack settings: **Node 24 LTS** (Node ≥22 also works). Startup Command can be left empty (uses `npm start`) or set to `node index.js` — both boot the same server (`index.js` is a one-line shim to `src/server.js`, kept for hosts still configured to run it from the legacy backend).
+- App settings: `JWT_SECRET` (≥16 chars — v2 refuses to boot otherwise), `MONGODB_URI`, `ADMIN_EMAILS`, optional `CORS_ORIGINS=https://<frontend-host>`.
+- Every signed-in user is logged out once at the switch: legacy tokens carry `userId`, not `sub`, so v2 rejects them with 401 `TOKEN_INVALID` and Frontend-v2 shows its "session expired" banner. This is expected, one-time, and needs no user communication beyond that banner.
+- Verify `req.ip` on the App Service actually resolves to the client's real address (not the load balancer's) — Azure's proxy setup can vary; check a live rate-limit response's key behavior if in doubt.
+- The global limiter is 300 requests per 15 minutes **per IP**. A whole hostel behind one NAT/router shares that budget. Watch for 429s clustering from a single hostel IP and raise the limit if students hit it.
+
+**Mixed-case legacy emails:** the legacy backend stored emails exactly as typed; v2 lowercases email on input and looks up by exact match, and the frontend now lowercases the email field as the user types. Any legacy account with uppercase letters in its stored email can no longer log in under v2. By owner decision, these accounts are not migrated — the owner will delete them directly rather than run a lowercase migration. To list them first:
 
 ```js
-// 1. Find case-insensitive duplicates and resolve them manually first
-//    (e.g. "Foo@Bar.com" and "foo@bar.com" both existing would collide once lowercased).
-db.users.aggregate([
-  { $group: { _id: { $toLower: '$email' }, count: { $sum: 1 }, emails: { $push: '$email' } } },
-  { $match: { count: { $gt: 1 } } },
-]);
-
-// 2. Once duplicates are resolved, lowercase every stored email in place.
-db.users.updateMany({}, [{ $set: { email: { $toLower: '$email' } } }]);
+db.users.find({ email: /[A-Z]/ });
 ```
-
-Then:
-
-1. `.github/workflows/cicd.yml`: change `cd Backend` → `cd Backend-v2`, `package: Backend` → `package: Backend-v2`, `node-version: 22` → `node-version: 24`.
-2. App Service → Settings → Configuration → Stack settings: **Node 24 LTS**, startup command `npm start`.
-3. App settings: `JWT_SECRET`, `MONGODB_URI`, `ADMIN_EMAILS`, `CORS_ORIGINS=https://<frontend-host>`.
-4. No structural data migration is needed beyond the email-lowercasing step above: collections, field names and password storage are unchanged.
 
 ## Interview notes
 
