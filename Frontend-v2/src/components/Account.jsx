@@ -52,7 +52,7 @@ const Account = ({ user }) => {
       setSuccess('Password updated. Use it the next time you log in.');
       setForm(INITIAL);
     } catch (err) {
-      setError(err.message);
+      setError(err.status === 404 ? 'Password change is not available yet.' : err.message);
     } finally {
       setLoading(false);
     }
