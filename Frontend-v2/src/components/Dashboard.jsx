@@ -15,6 +15,7 @@ import {
   LuLogOut,
   LuMenu,
   LuX,
+  LuUser,
 } from 'react-icons/lu';
 import Wordmark from './ui/Wordmark';
 import ListingsBrowser from './ListingsBrowser';
@@ -23,12 +24,13 @@ import MyListings from './MyListings';
 import MyRequests from './MyRequests';
 import AddListing from './AddListing';
 import AddRequest from './AddRequest';
+import Account from './Account';
 import ManageUsers from './ManageUsers';
 import ManageListings from './ManageListings';
 import ManageRequests from './ManageRequests';
 import { apiFetch, clearSession, getToken, getUser, setSession } from '../lib/api';
 
-const buildTabs = (setActiveTab) => [
+const buildTabs = ({ setActiveTab, user }) => [
   {
     group: 'Browse',
     items: [
@@ -84,6 +86,19 @@ const buildTabs = (setActiveTab) => [
         title: 'Post a request',
         sub: 'Ask your hostel for what you need',
         render: () => <AddRequest onSuccess={() => setActiveTab('myRequests')} />,
+      },
+    ],
+  },
+  {
+    group: 'Account',
+    items: [
+      {
+        id: 'account',
+        label: 'Account',
+        icon: LuUser,
+        title: 'Your account',
+        sub: 'Profile details and password',
+        render: () => <Account user={user} />,
       },
     ],
   },
@@ -144,8 +159,8 @@ const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const tabGroups = useMemo(
-    () => buildTabs(setActiveTab).filter((g) => !g.adminOnly || isAdmin),
-    [isAdmin],
+    () => buildTabs({ setActiveTab, user }).filter((g) => !g.adminOnly || isAdmin),
+    [isAdmin, user],
   );
   const allTabs = tabGroups.flatMap((g) => g.items);
   const current = allTabs.find((t) => t.id === activeTab) || allTabs[0];
