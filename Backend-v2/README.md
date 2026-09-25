@@ -63,7 +63,7 @@ src/
 
 Legacy paths (`/user`, `/product`, `/request`, `/admin`) and `/api/v1/{auth,listings,requests,admin}` serve the same routers. Full table in `docs/superpowers/specs/2026-09-25-backend-v2-design.md` §5. Also `GET /health`.
 
-New in v2: `GET /user/me`, `PUT /user/password` (`{ currentPassword, newPassword }` → 200 `{ message }` or 400 `WRONG_PASSWORD`), `GET /user/:id` now requires auth and returns only public fields (`PUBLIC_USER_FIELDS` in `src/config/constants.js`: name, email, phone, hostel, roomNumber).
+New in v2: `GET /user/me`, `PUT /user/password` (`{ currentPassword, newPassword }` → 200 `{ message }` or 400 `WRONG_PASSWORD`), `GET /user/:id` now requires auth and returns only public profile fields, no email (`PUBLIC_PROFILE_FIELDS` in `src/modules/users/users.service.js`: name, hostel, roomNumber, phone).
 
 ## Environment
 
@@ -78,6 +78,14 @@ New in v2: `GET /user/me`, `PUT /user/password` (`{ currentPassword, newPassword
 | `CORS_ORIGINS` | no | comma-separated; empty allows all (warns) |
 
 ## Deploying to Azure (when ready)
+
+**Pre-flip checklist:**
+
+- Every signed-in user is logged out once at the flip: legacy tokens carry `userId`, not `sub`, so v2 rejects them with 401 `TOKEN_INVALID` and Frontend-v2 shows its "session expired" banner. This is expected, one-time, and needs no user communication beyond that banner.
+- v2 refuses to boot if `JWT_SECRET` is under 16 characters — confirm the App Service setting before the flip, not after.
+- Run the email-lowercase migration below against production before the flip, not after (see "Before flipping" immediately below).
+- After deploying, verify `req.ip` on the App Service actually resolves to the client's real address (not the load balancer's) — Azure's proxy setup can vary; check a live rate-limit response's key behavior if in doubt.
+- The global limiter is 300 requests per 15 minutes **per IP**. A whole hostel behind one NAT/router shares that budget. Watch for 429s clustering from a single hostel IP after the flip and raise the limit if students hit it.
 
 **Before flipping (one-time data step):** the legacy backend stored emails exactly as typed; v2 lowercases email on input and looks up by exact match. Any legacy account with a mixed-case email would stop being found. Run this against the production database first:
 
