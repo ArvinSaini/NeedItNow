@@ -21,6 +21,7 @@ const FIELDS = [
 /* per-field input sanitizers — block invalid characters as the user types */
 const SANITIZERS = {
   name: (v) => v.replace(/[^a-zA-Z\s.'-]/g, ''),
+  email: (v) => v.toLowerCase(),
   phone: (v) => v.replace(/\D/g, '').slice(0, 10),
   roomNumber: (v) => v.replace(/[^a-zA-Z0-9-]/g, '').slice(0, 8),
 };
