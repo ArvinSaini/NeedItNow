@@ -138,19 +138,26 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(getUser);
 
-  /* Refresh the cached user (role, hostel) and trip the session handler early if the token is dead.
-     Non-auth failures (legacy backend, network) keep the cached user. */
+  /* Refresh the cached user (role, hostel, block status) and trip the session handler early if
+     the token is dead — on mount, and then on an interval so a block applied while the dashboard
+     is left open (no clicks, no writes) still ends the session within a minute instead of only
+     on the next action. Non-auth failures (legacy backend, network) keep the cached user. */
   useEffect(() => {
     let cancelled = false;
-    apiFetch('/user/me', { auth: true })
-      .then((data) => {
-        if (cancelled || !data?.user) return;
-        setSession(getToken(), data.user);
-        setUser(data.user);
-      })
-      .catch(() => {});
+    const checkSession = () => {
+      apiFetch('/user/me', { auth: true })
+        .then((data) => {
+          if (cancelled || !data?.user) return;
+          setSession(getToken(), data.user);
+          setUser(data.user);
+        })
+        .catch(() => {});
+    };
+    checkSession();
+    const interval = setInterval(checkSession, 60000);
     return () => {
       cancelled = true;
+      clearInterval(interval);
     };
   }, []);
 
