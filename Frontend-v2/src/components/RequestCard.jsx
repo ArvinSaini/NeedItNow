@@ -1,11 +1,13 @@
-import { useState } from 'react';
-import { LuMapPin, LuPhone, LuArrowRight } from 'react-icons/lu';
+import { useRef, useState } from 'react';
+import { LuArrowRight } from 'react-icons/lu';
 import Badge from './ui/Badge';
 import DetailsDialog from './ui/DetailsDialog';
+import PersonRow from './ui/PersonRow';
 import { getCategory, getRequestStatus, getUrgency } from '../lib/constants';
 
 const RequestCard = ({ request, children }) => {
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const viewDetailsRef = useRef(null);
   const category = getCategory(request.category);
   const status = getRequestStatus(request.status);
   const urgency = getUrgency(request.urgency);
@@ -14,9 +16,11 @@ const RequestCard = ({ request, children }) => {
 
   // Whole card is a click-to-open-details convenience; any nested button/link
   // (the "View details" button itself, or a future action button) handles
-  // its own click and must not also toggle the dialog a second time.
+  // its own click and must not also toggle the dialog a second time. A click
+  // that ends a text selection (drag-to-select) shouldn't open it either.
   const handleCardClick = (e) => {
     if (e.target.closest('button, a')) return;
+    if (window.getSelection?.().toString()) return;
     setDetailsOpen(true);
   };
 
@@ -40,6 +44,7 @@ const RequestCard = ({ request, children }) => {
           <h3 className="line-clamp-2 wrap-anywhere font-bold tracking-tight text-ink-900">{request.title}</h3>
           <p className="mt-1 line-clamp-2 wrap-anywhere flex-1 text-sm text-ink-600">{request.description}</p>
           <button
+            ref={viewDetailsRef}
             type="button"
             onClick={() => setDetailsOpen(true)}
             className="mt-1.5 inline-flex w-fit items-center gap-1 text-xs font-semibold text-primary-600 transition hover:text-primary-700"
@@ -48,31 +53,7 @@ const RequestCard = ({ request, children }) => {
             <LuArrowRight className="h-3 w-3" />
           </button>
           <div className="mt-3 border-t border-dashed border-ink-200 pt-3">
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-cream-100 text-[0.65rem] font-bold text-cream-800">
-                {(request.requester?.name || '?').charAt(0).toUpperCase()}
-              </span>
-              <div className="min-w-0 text-xs text-ink-400">
-                <div className="truncate font-semibold text-ink-900">
-                  {request.requester?.name || 'Unknown'}
-                </div>
-                <div className="flex flex-wrap items-center gap-x-2">
-                  {request.requester?.hostel && (
-                    <span className="inline-flex items-center gap-1">
-                      <LuMapPin className="h-3 w-3" />
-                      Hostel {request.requester.hostel}
-                      {request.requester?.roomNumber && ` · ${request.requester.roomNumber}`}
-                    </span>
-                  )}
-                  {request.requester?.phone && (
-                    <span className="inline-flex items-center gap-1">
-                      <LuPhone className="h-3 w-3" />
-                      {request.requester.phone}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
+            <PersonRow person={request.requester} size="card" />
           </div>
           {children}
         </div>
@@ -83,6 +64,7 @@ const RequestCard = ({ request, children }) => {
         onClose={() => setDetailsOpen(false)}
         eyebrow={`${urgency.label} urgency · ${category.label}`}
         title={request.title}
+        returnFocusRef={viewDetailsRef}
       >
         <div className="mb-3 flex flex-wrap gap-1.5">
           <Badge tone={status.tone}>{status.label}</Badge>
@@ -100,29 +82,7 @@ const RequestCard = ({ request, children }) => {
           </div>
         )}
         <div className="mt-4 border-t border-dashed border-ink-200 pt-4">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-cream-100 text-xs font-bold text-cream-800">
-              {(request.requester?.name || '?').charAt(0).toUpperCase()}
-            </span>
-            <div className="min-w-0 text-sm text-ink-600">
-              <div className="font-semibold text-ink-900">{request.requester?.name || 'Unknown'}</div>
-              <div className="mt-0.5 flex flex-col gap-1 text-xs">
-                {request.requester?.hostel && (
-                  <span className="inline-flex items-center gap-1">
-                    <LuMapPin className="h-3 w-3" />
-                    Hostel {request.requester.hostel}
-                    {request.requester?.roomNumber && ` · ${request.requester.roomNumber}`}
-                  </span>
-                )}
-                {request.requester?.phone && (
-                  <span className="inline-flex items-center gap-1">
-                    <LuPhone className="h-3 w-3" />
-                    {request.requester.phone}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
+          <PersonRow person={request.requester} size="dialog" />
         </div>
       </DetailsDialog>
     </>
