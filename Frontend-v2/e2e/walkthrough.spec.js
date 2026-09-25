@@ -128,8 +128,37 @@ test('a blocked member is sent to the login page with a banner', async ({ browse
 
   await memberPage.reload(); // dashboard mount calls /user/me → 403 ACCOUNT_BLOCKED
   await expect(memberPage).toHaveURL(/\/login\?reason=blocked/);
-  await expect(memberPage.getByText('Your account has been blocked')).toBeVisible();
+  await expect(memberPage.getByText("blocked by the admin, so you've been logged out")).toBeVisible();
   await snap(memberPage, '06-blocked-banner');
+  await memberContext.close();
+});
+
+test('blocking a member logs them out of every open tab within seconds, no reload needed', async ({ browser, page, baseURL }) => {
+  const memberContext = await browser.newContext({ baseURL });
+  const listingsPage = await memberContext.newPage();
+  const requestsPage = await memberContext.newPage();
+
+  // A fresh member for this scenario, logged in on two public pages (no dashboard, no reload).
+  // Both tabs share the same context, so they share the same origin's localStorage session.
+  const secondMember = { name: 'Second Member', email: 'member2@test.com', password: 'secret123', phone: '9876543212', hostel: 'H3', room: '303' };
+  await signup(listingsPage, secondMember);
+  await listingsPage.goto('/listings');
+  await requestsPage.goto('/requests');
+
+  await login(page, admin);
+  await tab(page, 'Manage users').click();
+  const secondMemberRow = page.locator('tr', { hasText: secondMember.email });
+  await secondMemberRow.getByRole('button', { name: 'Block', exact: true }).click();
+  await expect(secondMemberRow.getByText('Blocked', { exact: true })).toBeVisible();
+
+  // Neither public tab is reloaded — the app-wide session watcher must catch the block.
+  await expect(listingsPage).toHaveURL(/\/login\?reason=blocked/, { timeout: 20_000 });
+  await expect(listingsPage.getByText("blocked by the admin, so you've been logged out")).toBeVisible();
+  await expect(requestsPage).toHaveURL(/\/login\?reason=blocked/, { timeout: 20_000 });
+  await expect(requestsPage.getByText("blocked by the admin, so you've been logged out")).toBeVisible();
+
+  await login(listingsPage, secondMember);
+  await expect(listingsPage.getByText('Your account has been blocked')).toBeVisible();
   await memberContext.close();
 });
 

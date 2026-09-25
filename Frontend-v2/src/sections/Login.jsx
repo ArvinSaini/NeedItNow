@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
 import { m } from 'framer-motion';
-import { LuArrowRight, LuCircleAlert, LuInfo } from 'react-icons/lu';
+import { LuArrowRight, LuCircleAlert, LuInfo, LuShieldAlert } from 'react-icons/lu';
 import Navbar from '../components/Navbar';
 import Button from '../components/ui/Button';
 import { Input } from '../components/ui/Field';
@@ -11,13 +11,15 @@ import { apiFetch, setSession } from '../lib/api';
 
 const NOTICES = {
   expired: 'Your session has expired. Please log in again.',
-  blocked: 'Your account has been blocked. Contact an admin.',
+  blocked: "Your account has been blocked by the admin, so you've been logged out.",
 };
 
 const Login = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const notice = NOTICES[searchParams.get('reason')];
+  const reason = searchParams.get('reason');
+  const notice = NOTICES[reason];
+  const isBlocked = reason === 'blocked';
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -57,7 +59,14 @@ const Login = () => {
           </h1>
           <p className="mt-1 text-sm text-ink-400">Log in to your hostel community</p>
 
-          {notice && !error && (
+          {notice && !error && isBlocked && (
+            <div className="mt-5 flex items-center gap-2 rounded-xl border border-primary-200 bg-primary-50 px-4 py-3 text-left text-sm font-medium text-primary-700">
+              <LuShieldAlert className="h-4 w-4 flex-none" />
+              {notice}
+            </div>
+          )}
+
+          {notice && !error && !isBlocked && (
             <div className="mt-5 flex items-center gap-2 rounded-xl border border-cream-300 bg-cream-50 px-4 py-3 text-left text-sm font-medium text-cream-800">
               <LuInfo className="h-4 w-4 flex-none" />
               {notice}

@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LazyMotion } from 'framer-motion';
 import { getToken } from './lib/api';
+import useSessionWatch from './lib/useSessionWatch';
 import Home from './sections/Home';
 import Spinner from './components/ui/Spinner';
 
@@ -19,9 +20,15 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+const SessionWatcher = () => {
+  useSessionWatch();
+  return null;
+};
+
 const App = () => (
   <LazyMotion features={loadMotionFeatures} strict>
     <BrowserRouter>
+      <SessionWatcher />
       <Suspense fallback={<Spinner />}>
         <Routes>
           <Route path="/" element={<Home />} />

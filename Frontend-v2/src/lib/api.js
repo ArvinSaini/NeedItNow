@@ -24,6 +24,7 @@ export function getUser() {
 }
 
 export function setSession(token, user) {
+  localStorage.removeItem('sessionEndReason'); // fresh login, no stale reason for other tabs
   localStorage.setItem('token', token);
   localStorage.setItem('user', JSON.stringify(user));
 }
@@ -33,8 +34,11 @@ export function clearSession() {
   localStorage.removeItem('user');
 }
 
-/* Clears the session and sends the user to the login page with an explanation banner. */
+/* Clears the session and sends the user to the login page with an explanation banner. Stamps
+   the reason first so other open tabs (which only see the `token` key disappear via the
+   `storage` event) know why and can show the same banner instead of a bare redirect. */
 export function endSession(reason) {
+  localStorage.setItem('sessionEndReason', reason);
   clearSession();
   window.location.assign(`/login?reason=${reason}`);
 }
