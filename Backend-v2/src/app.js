@@ -5,6 +5,8 @@ import morgan from 'morgan';
 import mongoose from 'mongoose';
 import { config } from './config/env.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
+import { globalLimiter } from './middleware/rateLimit.js';
+import { authRouter } from './modules/auth/auth.routes.js';
 
 /** Builds the Express app without listening, so tests and the server share one definition. */
 export function createApp() {
@@ -16,6 +18,7 @@ export function createApp() {
   app.use(cors({ origin: config.CORS_ORIGINS.length ? config.CORS_ORIGINS : true }));
   app.use(express.json({ limit: '50kb' }));
   if (config.NODE_ENV !== 'test') app.use(morgan(config.NODE_ENV === 'production' ? 'combined' : 'dev'));
+  app.use(globalLimiter);
 
   app.get('/health', (req, res) => {
     res.json({
@@ -24,6 +27,8 @@ export function createApp() {
       db: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
     });
   });
+
+  app.use(['/user', '/api/v1/auth'], authRouter);
 
   app.use(notFound);
   app.use(errorHandler);
