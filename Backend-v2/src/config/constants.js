@@ -6,6 +6,9 @@ export const REQUEST_STATUSES = ['active', 'fulfilled', 'cancelled'];
 export const URGENCIES = ['low', 'medium', 'high'];
 export const ROLES = ['user', 'admin'];
 
+// Fields safe to expose about a listing/request owner to any caller (no email/password internals beyond this).
+export const PUBLIC_USER_FIELDS = 'name email phone hostel roomNumber';
+
 export const LIMITS = {
   name: { min: 2, max: 50 },
   email: { max: 80 },

@@ -7,6 +7,7 @@ import { config } from './config/env.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
 import { globalLimiter } from './middleware/rateLimit.js';
 import { authRouter } from './modules/auth/auth.routes.js';
+import { listingsRouter } from './modules/listings/listings.routes.js';
 
 /** Builds the Express app without listening, so tests and the server share one definition. */
 export function createApp() {
@@ -29,6 +30,7 @@ export function createApp() {
   });
 
   app.use(['/user', '/api/v1/auth'], authRouter);
+  app.use(['/product', '/api/v1/listings'], listingsRouter);
 
   app.use(notFound);
   app.use(errorHandler);
