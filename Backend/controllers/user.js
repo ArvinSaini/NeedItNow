@@ -123,8 +123,39 @@ async function handleGetUser(req, res) {
     }
 }
 
+// Returns the caller's own account, sourced from req.user (set by verifyToken, which already
+// re-checks isBlocked). Lets clients re-validate a session — e.g. right after opening the
+// dashboard — without waiting for a write action to discover the account was blocked.
+async function handleGetMe(req, res) {
+    try {
+        const user = await User.findById(req.user.userId).select('-password');
+
+        if (!user) {
+            return res.status(401).json({
+                error: 'Account no longer exists. Please login again.',
+                code: 'USER_NOT_FOUND',
+            });
+        }
+
+        return res.json({
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                role: user.role,
+                hostel: user.hostel,
+                roomNumber: user.roomNumber,
+            },
+        });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to fetch account' });
+    }
+}
+
 module.exports = {
     handleUserSignup,
     handleUserLogin,
     handleGetUser,
+    handleGetMe,
 };
