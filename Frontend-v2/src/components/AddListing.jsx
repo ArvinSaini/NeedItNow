@@ -3,7 +3,7 @@ import { LuCircleAlert, LuCircleCheck } from 'react-icons/lu';
 import Button from './ui/Button';
 import { Input, Select, Textarea } from './ui/Field';
 import { apiFetch } from '../lib/api';
-import { CATEGORIES } from '../lib/constants';
+import { CATEGORIES, LIMITS } from '../lib/constants';
 
 const INITIAL = { title: '', description: '', category: 'books', type: 'lend', price: 0 };
 
@@ -58,6 +58,9 @@ const AddListing = ({ onSuccess }) => {
           onChange={handleChange}
           placeholder="e.g. Engineering Mathematics — Kreyszig"
           required
+          minLength={LIMITS.title.min}
+          maxLength={LIMITS.title.max}
+          counter
         />
         <Textarea
           label="Description"
@@ -66,6 +69,9 @@ const AddListing = ({ onSuccess }) => {
           onChange={handleChange}
           placeholder="Condition, how long you can lend it, pickup details…"
           required
+          minLength={LIMITS.description.min}
+          maxLength={LIMITS.description.max}
+          counter
         />
         <div className="grid gap-4 sm:grid-cols-2">
           <Select label="Category" name="category" value={form.category} onChange={handleChange}>
@@ -85,6 +91,7 @@ const AddListing = ({ onSuccess }) => {
           type="number"
           name="price"
           min="0"
+          max={LIMITS.price.max}
           value={form.price}
           onChange={handleChange}
           required={form.type === 'sell'}

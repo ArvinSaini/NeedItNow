@@ -147,8 +147,13 @@ const ManageUsers = () => {
                       </div>
                     </td>
                     <td className="px-5 py-3.5 text-ink-600">
-                      {user.hostel ? `Hostel ${user.hostel}` : '—'}
-                      {user.roomNumber && ` · ${user.roomNumber}`}
+                      <div
+                        className="max-w-40 truncate"
+                        title={`${user.hostel ? `Hostel ${user.hostel}` : '—'}${user.roomNumber ? ` · ${user.roomNumber}` : ''}`}
+                      >
+                        {user.hostel ? `Hostel ${user.hostel}` : '—'}
+                        {user.roomNumber && ` · ${user.roomNumber}`}
+                      </div>
                     </td>
                     <td className="px-5 py-3.5">
                       <Badge tone={user.role === 'admin' ? 'cream' : 'gray'}>{user.role || 'user'}</Badge>

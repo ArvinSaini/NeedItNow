@@ -13,6 +13,8 @@ import {
   getListingStatus,
   getListingType,
   LISTING_STATUS,
+  LIMITS,
+  formatPrice,
 } from '../lib/constants';
 
 const MyListings = () => {
@@ -123,13 +125,22 @@ const MyListings = () => {
               >
                 {editing ? (
                   <div className="space-y-3 p-4">
-                    <Input label="Title" name="title" value={editForm.title} onChange={handleEditChange} />
+                    <Input
+                      label="Title"
+                      name="title"
+                      value={editForm.title}
+                      onChange={handleEditChange}
+                      maxLength={LIMITS.title.max}
+                      counter
+                    />
                     <Textarea
                       label="Description"
                       name="description"
                       value={editForm.description}
                       onChange={handleEditChange}
                       className="min-h-20"
+                      maxLength={LIMITS.description.max}
+                      counter
                     />
                     <div className="grid grid-cols-2 gap-3">
                       <Select label="Category" name="category" value={editForm.category} onChange={handleEditChange}>
@@ -155,6 +166,7 @@ const MyListings = () => {
                         type="number"
                         name="price"
                         min="0"
+                        max={LIMITS.price.max}
                         value={editForm.price}
                         onChange={handleEditChange}
                       />
@@ -179,17 +191,17 @@ const MyListings = () => {
                         <Badge tone={type.tone}>{type.label}</Badge>
                         <Badge tone="gray">{category.label}</Badge>
                       </div>
-                      <h3 className="font-bold tracking-tight text-ink-900">
+                      <h3 className="line-clamp-2 wrap-anywhere font-bold tracking-tight text-ink-900">
                         {listing.title}{' '}
                         {Number(listing.price) > 0 ? (
-                          <span className="serif-accent text-lg text-primary-500">₹{listing.price}</span>
+                          <span className="serif-accent text-lg text-primary-500">₹{formatPrice(listing.price)}</span>
                         ) : (
                           String(listing.type).toLowerCase() === 'lend' && (
                             <span className="serif-accent text-lg text-emerald-600">Free</span>
                           )
                         )}
                       </h3>
-                      <p className="mt-1 line-clamp-2 flex-1 text-sm text-ink-600">{listing.description}</p>
+                      <p className="mt-1 line-clamp-2 wrap-anywhere flex-1 text-sm text-ink-600">{listing.description}</p>
                       <div className="mt-4 flex gap-2">
                         <Button size="sm" variant="ghost" onClick={() => startEdit(listing)} className="flex-1">
                           <LuPencil className="h-3.5 w-3.5" />

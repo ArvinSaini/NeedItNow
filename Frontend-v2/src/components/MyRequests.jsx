@@ -14,6 +14,7 @@ import {
   getCategory,
   getRequestStatus,
   getUrgency,
+  LIMITS,
 } from '../lib/constants';
 
 const MyRequests = () => {
@@ -122,13 +123,22 @@ const MyRequests = () => {
               >
                 {editing ? (
                   <div className="space-y-3 p-4">
-                    <Input label="Title" name="title" value={editForm.title} onChange={handleEditChange} />
+                    <Input
+                      label="Title"
+                      name="title"
+                      value={editForm.title}
+                      onChange={handleEditChange}
+                      maxLength={LIMITS.title.max}
+                      counter
+                    />
                     <Textarea
                       label="Details"
                       name="description"
                       value={editForm.description}
                       onChange={handleEditChange}
                       className="min-h-20"
+                      maxLength={LIMITS.description.max}
+                      counter
                     />
                     <div className="grid grid-cols-2 gap-3">
                       <Select label="Category" name="category" value={editForm.category} onChange={handleEditChange}>
@@ -175,8 +185,8 @@ const MyRequests = () => {
                         <Badge tone={status.tone}>{status.label}</Badge>
                         <Badge tone="gray">{category.label}</Badge>
                       </div>
-                      <h3 className="font-bold tracking-tight text-ink-900">{request.title}</h3>
-                      <p className="mt-1 line-clamp-2 flex-1 text-sm text-ink-600">{request.description}</p>
+                      <h3 className="line-clamp-2 wrap-anywhere font-bold tracking-tight text-ink-900">{request.title}</h3>
+                      <p className="mt-1 line-clamp-2 wrap-anywhere flex-1 text-sm text-ink-600">{request.description}</p>
                       <div className="mt-4 flex gap-2">
                         <Button size="sm" variant="ghost" onClick={() => startEdit(request)} className="flex-1">
                           <LuPencil className="h-3.5 w-3.5" />

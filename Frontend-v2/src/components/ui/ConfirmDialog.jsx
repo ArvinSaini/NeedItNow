@@ -27,7 +27,7 @@ const ConfirmDialog = ({ open, title, message, confirmLabel = 'Delete', onConfir
             <LuTriangleAlert className="h-6 w-6" />
           </div>
           <h3 className="text-lg font-bold text-ink-900">{title}</h3>
-          <p className="mt-1 text-sm text-ink-600">{message}</p>
+          <p className="mt-1 wrap-anywhere text-sm text-ink-600">{message}</p>
           <div className="mt-6 flex justify-center gap-3">
             <Button variant="ghost" size="sm" onClick={onCancel}>
               Cancel

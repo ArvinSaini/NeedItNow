@@ -3,7 +3,7 @@ import { LuCircleAlert, LuCircleCheck } from 'react-icons/lu';
 import Button from './ui/Button';
 import { Input, Select, Textarea } from './ui/Field';
 import { apiFetch } from '../lib/api';
-import { CATEGORIES, URGENCY } from '../lib/constants';
+import { CATEGORIES, URGENCY, LIMITS } from '../lib/constants';
 
 const INITIAL = { title: '', description: '', category: 'books', urgency: 'medium' };
 
@@ -54,6 +54,9 @@ const AddRequest = ({ onSuccess }) => {
           onChange={handleChange}
           placeholder="e.g. Scientific calculator for exam week"
           required
+          minLength={LIMITS.title.min}
+          maxLength={LIMITS.title.max}
+          counter
         />
         <Textarea
           label="Details"
@@ -62,6 +65,9 @@ const AddRequest = ({ onSuccess }) => {
           onChange={handleChange}
           placeholder="When you need it, for how long, anything specific…"
           required
+          minLength={LIMITS.description.min}
+          maxLength={LIMITS.description.max}
+          counter
         />
         <div className="grid gap-4 sm:grid-cols-2">
           <Select label="Category" name="category" value={form.category} onChange={handleChange}>

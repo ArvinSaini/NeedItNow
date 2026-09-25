@@ -21,8 +21,8 @@ const RequestCard = ({ request, children }) => {
           <Badge tone={status.tone}>{status.label}</Badge>
           <Badge tone="gray">{category.label}</Badge>
         </div>
-        <h3 className="font-bold tracking-tight text-ink-900">{request.title}</h3>
-        <p className="mt-1 line-clamp-2 flex-1 text-sm text-ink-600">{request.description}</p>
+        <h3 className="line-clamp-2 wrap-anywhere font-bold tracking-tight text-ink-900">{request.title}</h3>
+        <p className="mt-1 line-clamp-2 wrap-anywhere flex-1 text-sm text-ink-600">{request.description}</p>
         <div className="mt-3 border-t border-dashed border-ink-200 pt-3">
           <div className="flex items-center gap-2.5">
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-cream-100 text-[0.65rem] font-bold text-cream-800">

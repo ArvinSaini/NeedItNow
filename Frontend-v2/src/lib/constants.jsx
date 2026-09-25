@@ -67,3 +67,16 @@ export const LISTING_TYPE = {
 export function getListingType(value) {
   return LISTING_TYPE[String(value || '').toLowerCase()] || { label: value || '—', tone: 'gray' };
 }
+
+/* Mirrors Backend-v2 src/config/constants.js LIMITS */
+export const LIMITS = {
+  title: { min: 3, max: 80 },
+  description: { min: 10, max: 500 },
+  price: { max: 100000 },
+  password: { min: 6, max: 64 },
+};
+
+const inr = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 });
+export function formatPrice(value) {
+  return inr.format(Number(value) || 0);
+}

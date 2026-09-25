@@ -1,6 +1,6 @@
 import { LuMapPin, LuPhone } from 'react-icons/lu';
 import Badge from './ui/Badge';
-import { getCategory, getListingStatus, getListingType } from '../lib/constants';
+import { getCategory, getListingStatus, getListingType, formatPrice } from '../lib/constants';
 
 const ListingCard = ({ listing, children }) => {
   const category = getCategory(listing.category);
@@ -21,15 +21,15 @@ const ListingCard = ({ listing, children }) => {
           <Badge tone={type.tone}>{type.label}</Badge>
           <Badge tone="gray">{category.label}</Badge>
         </div>
-        <h3 className="font-bold tracking-tight text-ink-900">
+        <h3 className="line-clamp-2 wrap-anywhere font-bold tracking-tight text-ink-900">
           {listing.title}{' '}
           {price > 0 ? (
-            <span className="serif-accent text-lg text-primary-500">₹{price}</span>
+            <span className="serif-accent text-lg text-primary-500">₹{formatPrice(price)}</span>
           ) : (
             isLend && <span className="serif-accent text-lg text-emerald-600">Free</span>
           )}
         </h3>
-        <p className="mt-1 line-clamp-2 flex-1 text-sm text-ink-600">{listing.description}</p>
+        <p className="mt-1 line-clamp-2 wrap-anywhere flex-1 text-sm text-ink-600">{listing.description}</p>
         <div className="mt-3 border-t border-dashed border-ink-200 pt-3">
           <div className="flex items-center gap-2.5">
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-cream-100 text-[0.65rem] font-bold text-cream-800">
