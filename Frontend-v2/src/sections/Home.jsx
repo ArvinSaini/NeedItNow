@@ -161,7 +161,7 @@ const Home = () => {
             className="relative"
           >
             {/* soft glow behind the panel */}
-            <div className="absolute -inset-6 rounded-[2.5rem] bg-[radial-gradient(60%_60%_at_30%_20%,rgba(249,231,178,0.6),transparent_70%),radial-gradient(50%_50%_at_80%_85%,rgba(211,78,78,0.12),transparent_70%)]" />
+            <div className="absolute -inset-4 rounded-[2.5rem] sm:-inset-6 bg-[radial-gradient(60%_60%_at_30%_20%,rgba(249,231,178,0.6),transparent_70%),radial-gradient(50%_50%_at_80%_85%,rgba(211,78,78,0.12),transparent_70%)]" />
 
             {/* framed panel */}
             <div className="relative rounded-3xl border border-cream-300 bg-white/70 p-5 pb-4 shadow-xl shadow-ink-900/10 backdrop-blur-sm">

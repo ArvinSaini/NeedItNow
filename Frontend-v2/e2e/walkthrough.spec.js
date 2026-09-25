@@ -31,7 +31,7 @@ async function signup(page, u) {
   await page.goto('/signup');
   await page.getByLabel('Full name').fill(u.name);
   await page.getByLabel('Email').fill(u.email);
-  await page.getByLabel('Password').fill(u.password);
+  await page.getByLabel('Password', { exact: true }).fill(u.password);
   await page.getByLabel('Phone (10 digits)').fill(u.phone);
   await page.getByLabel('Hostel').fill(u.hostel);
   await page.getByLabel('Room number').fill(u.room);
@@ -42,7 +42,7 @@ async function signup(page, u) {
 async function login(page, u) {
   await page.goto('/login');
   await page.getByLabel('Email').fill(u.email);
-  await page.getByLabel('Password').fill(u.password);
+  await page.getByLabel('Password', { exact: true }).fill(u.password);
   await page.getByRole('button', { name: 'Log in' }).click();
 }
 
@@ -61,7 +61,7 @@ test('signup shows an inline error for an invalid email and blocks submit until 
   await email.fill('a@b.c');
   await expect(page.getByText('Enter a valid email like name@gmail.com')).toBeVisible();
 
-  await page.getByLabel('Password').fill('secret123');
+  await page.getByLabel('Password', { exact: true }).fill('secret123');
   await page.getByLabel('Phone (10 digits)').fill('9999999999');
   await page.getByLabel('Hostel').fill('H9');
   await page.getByLabel('Room number').fill('909');
@@ -327,3 +327,278 @@ test('navbar shows Log out when logged in and updates instantly on logout, inclu
   await login(page, admin);
   await expect(page).toHaveURL(/\/dashboard/);
 });
+
+test('navbar drops "Get started" once logged in, on desktop and in the mobile menu', async ({ page }) => {
+  // Home's footer has its own links, so every assertion is scoped to the navbar.
+  const nav = page.locator('nav');
+
+  await page.goto('/');
+  await expect(nav.getByRole('link', { name: 'Log in', exact: true })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Get started', exact: true })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Dashboard', exact: true })).toHaveCount(0);
+
+  await login(page, admin);
+  await expect(page).toHaveURL(/\/dashboard/);
+  await page.goto('/');
+  await expect(nav.getByRole('link', { name: 'Dashboard', exact: true })).toBeVisible();
+  await expect(nav.getByRole('button', { name: 'Log out' })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Get started', exact: true })).toHaveCount(0);
+  await expect(nav.getByRole('link', { name: 'Log in', exact: true })).toHaveCount(0);
+  // Home's below-the-fold sections fade in on scroll, so snap the navbar element itself.
+  await nav.screenshot({ path: 'test-results/11-navbar-logged-in.png' });
+
+  // Mobile: the desktop row is hidden, so these only match the opened menu.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await nav.getByRole('button', { name: 'Toggle menu' }).click();
+  await expect(nav.getByRole('link', { name: 'Dashboard', exact: true })).toBeVisible();
+  await expect(nav.getByRole('button', { name: 'Log out' })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Get started', exact: true })).toHaveCount(0);
+
+  await nav.getByRole('button', { name: 'Log out' }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await nav.getByRole('button', { name: 'Toggle menu' }).click();
+  await expect(nav.getByRole('link', { name: 'Log in', exact: true })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Get started', exact: true })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Dashboard', exact: true })).toHaveCount(0);
+});
+
+// Flips one password field's eye toggle both ways, checking the value survives, focus stays in
+// the input, and nothing is submitted (no navigation, no API request).
+async function checkPasswordToggle(page, input, value) {
+  const apiRequests = [];
+  const onRequest = (req) => {
+    if (req.url().startsWith('http://localhost:5000')) apiRequests.push(req.url());
+  };
+  const field = input.locator('xpath=..');
+  const url = page.url();
+
+  await input.fill(value);
+  await expect(input).toHaveAttribute('type', 'password');
+
+  page.on('request', onRequest);
+  await field.getByRole('button', { name: 'Show password' }).click();
+  await expect(input).toHaveAttribute('type', 'text');
+  await expect(input).toHaveValue(value);
+  await expect(input).toBeFocused();
+  await expect(field.getByRole('button', { name: 'Hide password' })).toHaveAttribute('aria-pressed', 'true');
+
+  // Focus stayed in the field and the caret stayed at the end, so typing carries on from there.
+  await expect.poll(() => input.evaluate((el) => el.selectionStart)).toBe(value.length);
+  await page.keyboard.type('!');
+  await expect(input).toHaveValue(`${value}!`);
+
+  await field.getByRole('button', { name: 'Hide password' }).click();
+  await expect(input).toHaveAttribute('type', 'password');
+  await expect(input).toHaveValue(`${value}!`);
+  await expect(input).toBeFocused();
+  await expect.poll(() => input.evaluate((el) => el.selectionStart)).toBe(value.length + 1);
+  await expect(field.getByRole('button', { name: 'Show password' })).toHaveAttribute('aria-pressed', 'false');
+  page.off('request', onRequest);
+
+  expect(page.url()).toBe(url);
+  expect(apiRequests).toEqual([]);
+}
+
+test('password fields have an eye toggle that shows and hides the text without submitting', async ({ page }) => {
+  await page.goto('/login');
+  const loginPassword = page.getByLabel('Password', { exact: true });
+  await loginPassword.fill('peekaboo1');
+  await loginPassword.locator('xpath=..').getByRole('button', { name: 'Show password' }).click();
+  await expect(loginPassword).toHaveAttribute('type', 'text');
+  await snap(page, '12-password-visible');
+  await loginPassword.locator('xpath=..').getByRole('button', { name: 'Hide password' }).click();
+  await checkPasswordToggle(page, loginPassword, 'peekaboo1');
+
+  await page.goto('/signup');
+  await checkPasswordToggle(page, page.getByLabel('Password', { exact: true }), 'secret123');
+
+  await login(page, admin);
+  await expect(page).toHaveURL(/\/dashboard/);
+  await tab(page, 'Account').click();
+  const current = page.getByLabel('Current password', { exact: true });
+  const next = page.getByLabel('New password', { exact: true });
+  const confirm = page.getByLabel('Confirm new password', { exact: true });
+  for (const [input, value] of [[current, 'current123'], [next, 'nextpass123'], [confirm, 'nextpass123']]) {
+    await checkPasswordToggle(page, input, value);
+  }
+
+  // Each field toggles on its own: revealing one leaves the other two hidden.
+  await next.locator('xpath=..').getByRole('button', { name: 'Show password' }).click();
+  await expect(next).toHaveAttribute('type', 'text');
+  await expect(current).toHaveAttribute('type', 'password');
+  await expect(confirm).toHaveAttribute('type', 'password');
+  await expect(page.getByText('Password updated')).toHaveCount(0);
+});
+
+// ---------- Phone screens ----------
+const TALL_TITLE = 'Hiking poles with a long trail diary';
+const TALL_LAST_LINE = 'Last line: pick up from H1 after 6pm.';
+// Many short paragraphs keep it under the 500-char limit while rendering far taller than a phone.
+const TALL_DESCRIPTION = [
+  ...Array.from({ length: 16 }, (_, n) => `Trail note ${String(n + 1).padStart(2, '0')}: poles held.`),
+  TALL_LAST_LINE,
+].join('\n\n');
+
+const PHONES = [
+  { width: 390, height: 844 },
+  { width: 360, height: 740 },
+];
+const noHorizontalScroll = (page) =>
+  page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+const passwordToggle = (input, name) => input.locator('xpath=..').getByRole('button', { name });
+
+test('phone: seed a listing whose description is taller than the screen', async ({ page }) => {
+  expect(TALL_DESCRIPTION.length).toBeLessThanOrEqual(500);
+  await login(page, admin);
+  await expect(page).toHaveURL(/\/dashboard/);
+  await addListing(page, { title: TALL_TITLE, description: TALL_DESCRIPTION });
+});
+
+for (const phone of PHONES) {
+  const w = phone.width;
+
+  test.describe(`on a ${w}x${phone.height} phone`, () => {
+    test.use({ viewport: phone, isMobile: true, hasTouch: true });
+
+    test('no page scrolls sideways', async ({ page }) => {
+      for (const path of ['/', '/listings', '/requests', '/login', '/signup']) {
+        await page.goto(path);
+        await page.waitForLoadState('networkidle');
+        expect(await noHorizontalScroll(page), `${path} scrolls sideways`).toBe(true);
+      }
+      await login(page, admin);
+      await expect(page).toHaveURL(/\/dashboard/);
+      await page.waitForLoadState('networkidle');
+      expect(await noHorizontalScroll(page), '/dashboard scrolls sideways').toBe(true);
+      await snap(page, `13-mobile-dashboard-${w}`);
+      // On phones the dashboard tabs live in a slide-in drawer.
+      await page.getByRole('button', { name: 'Toggle sidebar' }).tap();
+      expect(await noHorizontalScroll(page), '/dashboard with the drawer open scrolls sideways').toBe(true);
+      await tab(page, 'Account').tap();
+      await expect(page.getByRole('heading', { name: 'Change password' })).toBeVisible();
+      expect(await noHorizontalScroll(page), '/dashboard account tab scrolls sideways').toBe(true);
+    });
+
+    test('only the clamped card offers Full details, and its popup fits and scrolls', async ({ page }) => {
+      const search = page.getByPlaceholder('Search for textbooks, cycles, kettles…');
+      await page.goto('/listings');
+
+      await search.fill(SHORT_TITLE);
+      await expect(page.locator('h3', { hasText: SHORT_TITLE }).first()).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Full details' })).toHaveCount(0);
+
+      await search.fill(TALL_TITLE);
+      await expect(page.locator('h3', { hasText: TALL_TITLE }).first()).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Full details' })).toHaveCount(1);
+      await snap(page, `13-mobile-cards-${w}`);
+
+      await page.getByRole('button', { name: 'Full details' }).tap();
+      const dialog = page.getByRole('dialog');
+      await expect(dialog).toBeVisible();
+      await snap(page, `13-mobile-dialog-${w}`);
+
+      const box = await dialog.boundingBox();
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(w);
+      expect(box.y).toBeGreaterThanOrEqual(0);
+      expect(box.y + box.height).toBeLessThanOrEqual(phone.height);
+
+      // The dialog body is the scroll container holding the description; it must really overflow.
+      const body = dialog.locator('div').filter({ has: page.getByText(TALL_LAST_LINE) }).last();
+      const sizes = await body.evaluate((el) => ({
+        overflowY: getComputedStyle(el).overflowY,
+        scrollHeight: el.scrollHeight,
+        clientHeight: el.clientHeight,
+      }));
+      expect(['auto', 'scroll']).toContain(sizes.overflowY);
+      expect(sizes.scrollHeight).toBeGreaterThan(sizes.clientHeight);
+
+      // The whole description is one <p>, so measure the last sentence itself with a Range and
+      // check it sits inside the body's visible box.
+      const lastLineShown = () =>
+        body.evaluate((el, text) => {
+          const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+          let node;
+          while ((node = walker.nextNode()) && !node.data.includes(text));
+          if (!node) return false;
+          const range = document.createRange();
+          const start = node.data.indexOf(text);
+          range.setStart(node, start);
+          range.setEnd(node, start + text.length);
+          const line = range.getBoundingClientRect();
+          const box = el.getBoundingClientRect();
+          return line.top >= box.top && line.bottom <= box.bottom;
+        }, TALL_LAST_LINE);
+      expect(await lastLineShown()).toBe(false);
+      await body.evaluate((el) => el.scrollTo({ top: el.scrollHeight }));
+      await expect.poll(lastLineShown).toBe(true);
+      await snap(page, `13-mobile-dialog-scrolled-${w}`);
+
+      await dialog.getByRole('button', { name: 'Close' }).tap();
+      await expect(dialog).toBeHidden();
+    });
+
+    test('menu shows Log in + Get started logged out, Dashboard + Log out logged in', async ({ page }) => {
+      const nav = page.locator('nav');
+      const menu = nav.getByRole('button', { name: 'Toggle menu' });
+
+      await page.goto('/listings');
+      await menu.tap();
+      await expect(nav.getByRole('link', { name: 'Log in', exact: true })).toBeVisible();
+      await expect(nav.getByRole('link', { name: 'Get started', exact: true })).toBeVisible();
+      await expect(nav.getByRole('link', { name: 'Dashboard', exact: true })).toHaveCount(0);
+      await expect(nav.getByRole('button', { name: 'Log out' })).toHaveCount(0);
+      await nav.screenshot({ path: `test-results/13-mobile-menu-logged-out-${w}.png` });
+
+      await login(page, admin);
+      await expect(page).toHaveURL(/\/dashboard/);
+      await page.goto('/listings');
+      await menu.tap();
+      await expect(nav.getByRole('link', { name: 'Dashboard', exact: true })).toBeVisible();
+      await expect(nav.getByRole('button', { name: 'Log out' })).toBeVisible();
+      await expect(nav.getByRole('link', { name: 'Get started', exact: true })).toHaveCount(0);
+      await expect(nav.getByRole('link', { name: 'Log in', exact: true })).toHaveCount(0);
+      await nav.screenshot({ path: `test-results/13-mobile-menu-logged-in-${w}.png` });
+    });
+
+    test('password eye toggle works and never covers the typed text', async ({ page }) => {
+      for (const path of ['/login', '/signup']) {
+        await page.goto(path);
+        const input = page.getByLabel('Password', { exact: true });
+        await input.fill('secret123');
+
+        const show = passwordToggle(input, 'Show password');
+        const buttonBox = await show.boundingBox();
+        const inputBox = await input.boundingBox();
+        const paddingRight = await input.evaluate((el) => parseFloat(getComputedStyle(el).paddingRight));
+        expect(paddingRight).toBeGreaterThanOrEqual(buttonBox.width);
+        // The button sits inside the input's right padding, so it can't overlap the text area.
+        expect(buttonBox.x).toBeGreaterThanOrEqual(inputBox.x + inputBox.width - paddingRight);
+        expect(buttonBox.x + buttonBox.width).toBeLessThanOrEqual(inputBox.x + inputBox.width);
+
+        await show.tap();
+        await expect(input).toHaveAttribute('type', 'text');
+        await expect(input).toHaveValue('secret123');
+        await expect(page).toHaveURL(new RegExp(`${path}$`));
+        if (path === '/signup') await snap(page, `13-mobile-password-${w}`);
+        await passwordToggle(input, 'Hide password').tap();
+        await expect(input).toHaveAttribute('type', 'password');
+        expect(await noHorizontalScroll(page)).toBe(true);
+      }
+    });
+
+    test('the signup email error wraps inside the screen', async ({ page }) => {
+      await page.goto('/signup');
+      await page.getByLabel('Email').fill('a@b.c');
+      const error = page.getByText('Enter a valid email like name@gmail.com');
+      await expect(error).toBeVisible();
+
+      const box = await error.boundingBox();
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(w);
+      expect(await fitsInBox(error)).toBe(true);
+      expect(await noHorizontalScroll(page)).toBe(true);
+      await snap(page, `13-mobile-email-error-${w}`);
+    });
+  });
+}

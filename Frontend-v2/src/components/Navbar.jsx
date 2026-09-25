@@ -70,12 +70,14 @@ const Navbar = () => {
               Log in
             </Link>
           )}
-          <Link
-            to="/signup"
-            className="rounded-full bg-white px-5 py-2 text-sm font-bold text-primary-700 shadow-md shadow-primary-900/20 transition-transform hover:-translate-y-0.5"
-          >
-            Get started
-          </Link>
+          {!loggedIn && (
+            <Link
+              to="/signup"
+              className="rounded-full bg-white px-5 py-2 text-sm font-bold text-primary-700 shadow-md shadow-primary-900/20 transition-transform hover:-translate-y-0.5"
+            >
+              Get started
+            </Link>
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -136,13 +138,15 @@ const Navbar = () => {
                 Log in
               </Link>
             )}
-            <Link
-              to="/signup"
-              onClick={() => setMobileOpen(false)}
-              className="block rounded-xl bg-primary-500 px-4 py-2.5 text-center text-sm font-bold text-white"
-            >
-              Get started
-            </Link>
+            {!loggedIn && (
+              <Link
+                to="/signup"
+                onClick={() => setMobileOpen(false)}
+                className="block rounded-xl bg-primary-500 px-4 py-2.5 text-center text-sm font-bold text-white"
+              >
+                Get started
+              </Link>
+            )}
           </div>
         </div>
       )}
