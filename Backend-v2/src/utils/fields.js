@@ -1,4 +1,5 @@
-// Shared content-field schemas reused by listings and (task 6) requests.
+// Shared content-field schemas reused by both listings and requests, since the two modules
+// validate the same title/description/category shape.
 import { z } from 'zod';
 import { CATEGORIES, LIMITS } from '../config/constants.js';
 
