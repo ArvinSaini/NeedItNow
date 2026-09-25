@@ -34,6 +34,7 @@ const Account = ({ user }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
     setSuccess('');
     const validationError = validate(form);
     if (validationError) {
