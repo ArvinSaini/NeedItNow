@@ -12,7 +12,7 @@ A hostel marketplace where students list items to lend or sell and post requests
 | `Backend-v2/` | The live API. Express 5, Mongoose (MongoDB), JWT auth, zod validation, rate limiting, tests |
 | `Backend/` | The original API, kept for reference only |
 | `Frontend/` | The original frontend, kept for reference only |
-| `docs/` | Design specs and MongoDB lecture notes |
+| `docs/` | MongoDB lecture notes |
 
 ## Running locally
 
