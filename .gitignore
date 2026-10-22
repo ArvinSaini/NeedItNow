@@ -1,0 +1,22 @@
+# dependencies and builds
+node_modules/
+dist/
+dist-ssr/
+coverage/
+test-results/
+playwright-report/
+
+# secrets
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+
+# editor and os
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
