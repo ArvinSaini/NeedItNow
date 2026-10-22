@@ -61,7 +61,7 @@ src/
 
 ## API
 
-Legacy paths (`/user`, `/product`, `/request`, `/admin`) and `/api/v1/{auth,listings,requests,admin}` serve the same routers. Full table in `docs/superpowers/specs/2026-09-25-backend-v2-design.md` §5. Also `GET /health`.
+Legacy paths (`/user`, `/product`, `/request`, `/admin`) and `/api/v1/{auth,listings,requests,admin}` serve the same routers. Also `GET /health`.
 
 New in v2: `GET /user/me`, `PUT /user/password` (`{ currentPassword, newPassword }` → 200 `{ message }` or 400 `WRONG_PASSWORD`), `GET /user/:id` now requires auth and returns only public profile fields, no email (`PUBLIC_PROFILE_FIELDS` in `src/modules/users/users.service.js`: name, hostel, roomNumber, phone).
 
